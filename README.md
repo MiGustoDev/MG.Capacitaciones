@@ -1,6 +1,6 @@
 <div align="center">
 
-# BPM · Mi Gusto
+# Mi Gusto · Capacitaciones
 
 ### Plataforma de capacitación obligatoria en Buenas Prácticas de Manufactura
 
