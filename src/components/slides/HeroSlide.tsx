@@ -8,11 +8,11 @@ interface HeroSlideProps { content: LessonContent }
 export function HeroSlide({ content }: HeroSlideProps) {
   const ref = useGSAPEntrance({ y: 32, duration: 0.7 })
   return (
-    <div ref={ref} className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center w-full opacity-0">
+    <div ref={ref} className="flex flex-col lg:flex-row gap-5 lg:gap-12 items-center w-full opacity-0">
       {/* Text side */}
-      <div className="flex-1 flex flex-col gap-5">
+      <div className="flex-1 flex flex-col gap-3 lg:gap-5">
         {content.tagline && (
-          <p className="text-brand-400 text-sm font-semibold tracking-widest uppercase">
+          <p className="text-brand-400 text-xs sm:text-sm font-semibold tracking-widest uppercase">
             {content.tagline}
           </p>
         )}

@@ -64,7 +64,7 @@ export function Course() {
         {/* Lesson content — scrollable */}
         <div
           ref={contentRef}
-          className={`flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-10 lg:px-12 ${
+          className={`flex-1 overflow-y-auto px-4 py-4 md:px-8 md:py-10 lg:px-12 ${
             isEvaluationActive ? 'flex items-center justify-center' : ''
           }`}
         >

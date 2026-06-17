@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+import gsap from 'gsap'
 import { usePageNavigate } from '../../hooks/usePageNavigate'
 import { useCourse } from '../../context/CourseContext'
 import { COURSE_DATA, getFlatLessons } from '../../data/course'
@@ -48,17 +50,49 @@ function LessonItem({
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = usePageNavigate()
   const { progress, isLessonCompleted, goToLesson } = useCourse()
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLElement>(null)
+  // Track whether component has been opened at least once (skip close animation on first render)
+  const hasOpenedRef = useRef(false)
 
-  /** Detects likely gender from a Spanish name heuristic:
-   *  first name ending in 'a' → woman, otherwise → man */
   const getGenderIcon = (fullName: string | null | undefined): string => {
-    if (!fullName) return '👤'
+    if (!fullName) return '🧑🏻'
     const firstName = fullName.trim().split(/\s+/)[0].toLowerCase()
-    // Common exceptions: masculine names ending in 'a'
     const masculineExceptions = ['luca', 'matia', 'elija', 'josua', 'ezra', 'ilia']
     if (masculineExceptions.includes(firstName)) return '👨🏻'
     return firstName.endsWith('a') ? '👩🏻' : '👨🏻'
   }
+
+  /** Animated close: slide panel out, fade overlay, then call onClose */
+  const handleClose = () => {
+    const panel = panelRef.current
+    const overlay = overlayRef.current
+    if (!panel || !overlay) {
+      onClose?.()
+      return
+    }
+    gsap.to(panel, { x: '-100%', duration: 0.22, ease: 'power3.in' })
+    gsap.to(overlay, {
+      opacity: 0,
+      duration: 0.18,
+      ease: 'power2.in',
+      delay: 0.04,
+      onComplete: () => onClose?.(),
+    })
+  }
+
+  // Animate the panel in whenever isOpen becomes true
+  useEffect(() => {
+    const panel = panelRef.current
+    const overlay = overlayRef.current
+    if (!panel || !overlay) return
+
+    if (isOpen) {
+      hasOpenedRef.current = true
+      gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.22, ease: 'power2.out' })
+      gsap.fromTo(panel, { x: '-100%' }, { x: '0%', duration: 0.28, ease: 'power3.out' })
+    }
+  }, [isOpen])
 
   const flat = getFlatLessons()
   const requiredLessons = flat.filter(l => l.id !== 'evaluacion-test' && l.id !== 'cierre-equipo')
@@ -67,7 +101,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const handleGoToEvaluation = () => {
     goToLesson('cierre', 'evaluacion-test')
-    onClose?.()
+    handleClose()
   }
 
   const content = (
@@ -82,11 +116,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <h2 className="text-sm font-bold text-text-primary mt-0.5 truncate">BPM · Capacitación</h2>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Botón Inicio (antes "Volver al Portal") */}
+          {/* Botón Inicio */}
           <button
             onClick={() => {
               navigate('/')
-              onClose?.()
+              handleClose()
             }}
             title="Volver al inicio"
             className="btn-primary flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg shadow-glow"
@@ -95,15 +129,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             <span>Inicio</span>
           </button>
 
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-elevated text-text-secondary"
-              aria-label="Cerrar menú"
-            >
-              ✕
-            </button>
-          )}
+          <button
+            onClick={handleClose}
+            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-elevated text-text-secondary"
+            aria-label="Cerrar menú"
+          >
+            ✕
+          </button>
         </div>
       </div>
 
@@ -137,7 +169,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     isCompleted={isLessonCompleted(lesson.id)}
                     onClick={() => {
                       goToLesson(mod.id, lesson.id)
-                      onClose?.()
+                      handleClose()
                     }}
                   />
                 ))}
@@ -147,8 +179,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         })}
       </nav>
 
-      <div className="px-5 py-3 border-t border-surface-border flex flex-col items-center gap-2">
-        {/* Botón Evaluar (antes en el header) */}
+      {/* Footer — only Evaluar button, no text */}
+      <div className="px-5 py-4 border-t border-surface-border flex justify-center">
         <button
           onClick={handleGoToEvaluation}
           title="Acceder a la evaluación"
@@ -157,31 +189,37 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <span>📝</span>
           <span>Evaluar</span>
         </button>
-        <p className="text-[10px] text-text-muted text-center font-medium mt-1">Desarrollado por el Departamento de sistemas de Mi Gusto 🥟</p>
       </div>
     </div>
   )
 
   return (
     <>
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — no animation needed, always visible */}
       <aside className="hidden lg:flex flex-col w-72 xl:w-80 flex-shrink-0 bg-surface-card border-r border-surface-border h-full overflow-hidden">
         {content}
       </aside>
 
-      {/* Mobile drawer overlay */}
-      {isOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
-            aria-hidden="true"
-          />
-          <aside className="relative w-80 max-w-[85vw] bg-surface-card h-full flex flex-col overflow-hidden z-10 shadow-2xl">
-            {content}
-          </aside>
-        </div>
-      )}
+      {/* Mobile drawer — always in DOM, animated via GSAP */}
+      <div
+        className={`lg:hidden fixed inset-0 z-50 flex ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      >
+        {/* Overlay */}
+        <div
+          ref={overlayRef}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm opacity-0"
+          onClick={handleClose}
+          aria-hidden="true"
+        />
+        {/* Panel */}
+        <aside
+          ref={panelRef}
+          className="relative w-80 max-w-[85vw] bg-surface-card h-full flex flex-col overflow-hidden z-10 shadow-2xl -translate-x-full"
+          style={{ transform: 'translateX(-100%)' }}
+        >
+          {content}
+        </aside>
+      </div>
     </>
   )
 }
