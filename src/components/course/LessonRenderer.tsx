@@ -21,25 +21,25 @@ export function LessonRenderer({ lesson, module }: LessonRendererProps) {
 
   switch (lesson.type) {
     case 'hero':
-      return <HeroSlide content={lesson.content} />
+      return <HeroSlide key={lesson.id} content={lesson.content} />
     case 'bullet-list':
-      return <BulletListSlide content={lesson.content} />
+      return <BulletListSlide key={lesson.id} content={lesson.content} />
     case 'compare':
-      return <CompareSlide content={lesson.content} />
+      return <CompareSlide key={lesson.id} content={lesson.content} />
     case 'alert':
-      return <AlertSlide content={lesson.content} />
+      return <AlertSlide key={lesson.id} content={lesson.content} />
     case 'steps':
-      return <StepsSlide content={lesson.content} />
+      return <StepsSlide key={lesson.id} content={lesson.content} />
     case 'quote':
-      return <QuoteSlide content={lesson.content} />
+      return <QuoteSlide key={lesson.id} content={lesson.content} />
     case 'module-hero':
-      return <ModuleHero content={lesson.content} module={module} />
+      return <ModuleHero key={lesson.id} content={lesson.content} module={module} />
     case 'commitment':
-      return <CommitmentSlide content={lesson.content} />
+      return <CommitmentSlide key={lesson.id} content={lesson.content} />
     case 'closing':
-      return <ClosingSlide content={lesson.content} onRestart={resetProgress} />
+      return <ClosingSlide key={lesson.id} content={lesson.content} onRestart={resetProgress} />
     case 'evaluation':
-      return <EvaluationSlide />
+      return <EvaluationSlide key={lesson.id} />
     default:
       return (
         <div className="flex flex-col gap-4 text-center py-12">

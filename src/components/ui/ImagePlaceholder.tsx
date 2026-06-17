@@ -27,19 +27,27 @@ export function ImagePlaceholder({
 
   if (image && !hasError) {
     const isContain = objectFit === 'contain'
-    const containerRatioClass = isContain ? 'h-auto w-fit max-w-full mx-auto' : `w-full ${ratioClass}`
+    if (isContain) {
+      return (
+        <div className={`mx-auto flex items-center justify-center relative ${className}`}>
+          <img
+            src={getAssetUrl(image)}
+            alt={alt}
+            className="max-w-full h-auto max-h-[inherit] object-contain select-none pointer-events-none rounded-xl border border-surface-border bg-surface-elevated"
+            onError={() => setHasError(true)}
+          />
+        </div>
+      )
+    }
+
     return (
       <div
-        className={`${containerRatioClass} rounded-xl overflow-hidden border border-surface-border bg-surface-elevated flex items-center justify-center relative ${className}`}
+        className={`w-full ${ratioClass} rounded-xl overflow-hidden border border-surface-border bg-surface-elevated flex items-center justify-center relative ${className}`}
       >
         <img
           src={getAssetUrl(image)}
           alt={alt}
-          className={
-            isContain
-              ? 'max-w-full h-auto max-h-[inherit] object-contain select-none pointer-events-none'
-              : 'w-full h-full object-cover select-none pointer-events-none'
-          }
+          className="w-full h-full object-cover select-none pointer-events-none"
           onError={() => setHasError(true)}
         />
       </div>
