@@ -56,71 +56,71 @@ export function Landing() {
   return (
     <div ref={ref} className="min-h-dvh bg-gradient-dark flex flex-col">
       {/* Hero */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-16 md:py-24 text-center max-w-5xl mx-auto w-full">
-        <div className="hero-badge opacity-0 inline-flex items-center gap-2 bg-brand-600/20 border border-brand-600/30 rounded-full px-4 py-1.5 mb-8">
-          <span className="text-brand-400 text-xs font-bold uppercase tracking-widest">Mi Gusto · Capacitación obligatoria</span>
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-16 md:py-24 text-center max-w-5xl mx-auto w-full">
+        <div className="hero-badge opacity-0 inline-flex items-center gap-2 bg-brand-600/20 border border-brand-600/30 rounded-full px-3 sm:px-4 py-1 sm:py-1.5 mb-4 sm:mb-8">
+          <span className="text-brand-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">Mi Gusto · Capacitación obligatoria</span>
         </div>
 
-        <h1 className="hero-title opacity-0 text-fluid-5xl font-extrabold text-text-primary leading-tight text-balance max-w-3xl mx-auto mb-6">
+        <h1 className="hero-title opacity-0 text-3xl sm:text-fluid-5xl font-extrabold text-text-primary leading-tight text-balance max-w-3xl mx-auto mb-4 sm:mb-6">
           Buenas Prácticas de{' '}
           <span className="gradient-text">Manufactura</span>
         </h1>
 
-        <p className="hero-sub opacity-0 text-fluid-lg text-text-secondary max-w-xl mx-auto mb-10 leading-relaxed">
+        <p className="hero-sub opacity-0 text-sm sm:text-fluid-lg text-text-secondary max-w-xl mx-auto mb-6 sm:mb-10 leading-relaxed">
           Garantizamos la elaboración de alimentos seguros para el consumidor mediante el control del personal, las instalaciones y las operaciones.
         </p>
 
         {/* CTA */}
-        <div className="hero-cta opacity-0 flex flex-col sm:flex-row items-center gap-4 mb-12">
+        <div className="hero-cta opacity-0 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-8 sm:mb-12">
           <button
             id="btn-start-course"
             onClick={handleStart}
-            className="btn-primary text-base px-8 py-4 shadow-glow flex items-center gap-2"
+            className="btn-primary text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 shadow-glow flex items-center gap-2"
           >
             {hasProgress ? '▶ Continuar capacitación' : '🚀 Comenzar capacitación'}
           </button>
           {hasProgress && (
-            <p className="text-text-muted text-sm">
+            <p className="text-text-muted text-xs sm:text-sm">
               Tenés {progress.completedLessons.length} de {totalLessons} lecciones completadas
             </p>
           )}
         </div>
 
         {/* Objectives */}
-        <div className="hero-objectives opacity-0 flex flex-col sm:flex-row gap-4 mb-16 w-full max-w-3xl">
+        <div className="hero-objectives opacity-0 grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-16 w-full max-w-3xl [&>*:last-child]:col-span-2 [&>*:last-child]:sm:flex-1">
           {COURSE_DATA.objectives.map((obj, i) => (
             <div
               key={i}
-              className="hero-objectives flex-1 bg-surface-card border border-surface-border rounded-xl px-5 py-4 text-left"
+              className="hero-objectives flex-1 bg-surface-card border border-surface-border rounded-xl px-3 py-3 sm:px-5 sm:py-4 text-left"
             >
-              <span className="text-xl mb-2 block" aria-hidden="true">
+              <span className="text-lg sm:text-xl mb-1 sm:mb-2 block" aria-hidden="true">
                 {['🎯', '🛡️', '⚖️'][i]}
               </span>
-              <p className="text-sm text-text-secondary leading-snug">{obj}</p>
+              <p className="text-xs sm:text-sm text-text-secondary leading-snug">{obj}</p>
             </div>
           ))}
         </div>
 
         {/* Module grid */}
         <div className="w-full max-w-3xl">
-          <h2 className="text-fluid-xl font-bold text-text-primary mb-6">Contenido del curso</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <h2 className="text-base sm:text-fluid-xl font-bold text-text-primary mb-3 sm:mb-6">Contenido del curso</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4 [&>*:last-child]:col-span-2 [&>*:last-child]:sm:col-span-1">
             {COURSE_DATA.modules.map(mod => (
               <div
                 key={mod.id}
-                className={`module-card opacity-0 border rounded-2xl p-5 text-left ${MODULE_COLORS[mod.id] ?? 'border-surface-border bg-surface-card'}`}
+                className={`module-card opacity-0 border rounded-2xl p-3 sm:p-5 text-left ${MODULE_COLORS[mod.id] ?? 'border-surface-border bg-surface-card'}`}
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl" aria-hidden="true">{mod.icon}</span>
+                <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                  <span className="text-xl sm:text-2xl" aria-hidden="true">{mod.icon}</span>
                   <div>
-                    <p className="text-xs text-text-muted uppercase tracking-wider">Bloque {mod.number}</p>
-                    <h3 className={`font-bold text-fluid-base ${MODULE_TEXT[mod.id] ?? 'text-text-primary'}`}>
+                    <p className="text-[9px] sm:text-xs text-text-muted uppercase tracking-wider">Bloque {mod.number}</p>
+                    <h3 className={`font-bold text-xs sm:text-fluid-base leading-tight ${MODULE_TEXT[mod.id] ?? 'text-text-primary'}`}>
                       {mod.title}
                     </h3>
                   </div>
                 </div>
-                <p className="text-sm text-text-secondary leading-snug mb-3">{mod.description}</p>
-                <p className="text-xs text-text-muted">{mod.lessons.length} lecciones</p>
+                <p className="text-[10px] sm:text-sm text-text-secondary leading-snug mb-1 sm:mb-3 line-clamp-2">{mod.description}</p>
+                <p className="text-[9px] sm:text-xs text-text-muted">{mod.lessons.length} lecciones</p>
               </div>
             ))}
           </div>

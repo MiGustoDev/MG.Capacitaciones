@@ -207,14 +207,14 @@ export function Hub() {
 
       {/* Main Content */}
       <main className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center">
-        <div className="text-center mb-12 hub-header-text opacity-0">
-          <span className="text-brand-400 text-xs font-extrabold uppercase tracking-widest bg-brand-600/10 border border-brand-600/20 px-3 py-1 rounded-full">
+        <div className="text-center mb-6 sm:mb-12 hub-header-text opacity-0">
+          <span className="text-brand-400 text-[10px] sm:text-xs font-extrabold uppercase tracking-widest bg-brand-600/10 border border-brand-600/20 px-3 py-1 rounded-full">
             Plataforma de Capacitaciones
           </span>
-          <h1 className="text-fluid-4xl font-black mt-4 leading-tight">
+          <h1 className="text-2xl sm:text-fluid-4xl font-black mt-3 sm:mt-4 leading-tight">
             Portal de Formación <span className="gradient-text">Fábrica</span>
           </h1>
-          <p className="text-text-secondary mt-3 max-w-lg mx-auto text-sm md:text-base">
+          <p className="text-text-secondary mt-2 sm:mt-3 max-w-lg mx-auto text-xs sm:text-base hidden sm:block">
             Seleccioná la capacitación asignada para registrarte e iniciar tu entrenamiento obligatorio.
           </p>
         </div>
@@ -222,13 +222,13 @@ export function Hub() {
 
 
         {/* 2x3 Button Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 w-full max-w-5xl">
           {MODULES.map((mod) => (
             <button
               key={mod.id}
               onClick={() => handleModuleClick(mod)}
               disabled={!mod.active}
-              className={`hub-card opacity-0 text-left rounded-2xl border p-6 flex flex-col justify-between h-56 transition-all duration-300 relative group overflow-hidden ${
+              className={`hub-card opacity-0 text-left rounded-2xl border p-3.5 sm:p-6 flex flex-col justify-between h-40 sm:h-56 transition-all duration-300 relative group overflow-hidden ${
                 mod.active
                   ? 'bg-surface-card hover:bg-surface-elevated border-brand-600/40 hover:border-brand-500 hover:shadow-glow cursor-pointer hover:-translate-y-1'
                   : 'bg-surface/30 border-surface-border/40 opacity-50 cursor-not-allowed'
@@ -240,12 +240,12 @@ export function Hub() {
               )}
 
               <div className="flex justify-between items-start w-full relative z-10">
-                <span className="text-4xl bg-surface/50 p-2.5 rounded-xl border border-surface-border/30">
+                <span className="text-2xl sm:text-4xl bg-surface/50 p-1.5 sm:p-2.5 rounded-xl border border-surface-border/30">
                   {mod.icon}
                 </span>
                 {mod.id === 'calidad' && progress.userName ? (
-                  <div className="relative w-12 h-12 flex items-center justify-center flex-shrink-0" title={`Progreso: ${percentComplete}%`}>
-                    <svg className="w-full h-full transform -rotate-90">
+                  <div className="relative w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0" title={`Progreso: ${percentComplete}%`}>
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
                       {/* Fondo del círculo */}
                       <circle
                         cx="24"
@@ -266,35 +266,35 @@ export function Hub() {
                         strokeLinecap="round"
                       />
                     </svg>
-                    <span className="absolute text-[10px] font-black text-white">
+                    <span className="absolute text-[8px] sm:text-[10px] font-black text-white">
                       {animatedPercent}%
                     </span>
                   </div>
                 ) : (
                   <span
-                    className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+                    className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border ${
                       mod.active
                         ? 'text-brand-300 bg-brand-500/10 border-brand-500/20'
                         : 'text-text-muted bg-surface/30 border-surface-border/25'
                     }`}
                   >
-                    {mod.tagline}
+                    {mod.active ? mod.tagline : 'Próx.'}
                   </span>
                 )}
               </div>
 
-              <div className="mt-4 relative z-10">
-                <h3 className="text-fluid-lg font-bold text-text-primary group-hover:text-brand-400 transition-colors">
+              <div className="mt-2 sm:mt-4 relative z-10">
+                <h3 className="text-xs sm:text-fluid-lg font-bold text-text-primary group-hover:text-brand-400 transition-colors leading-tight">
                   {mod.title}
                 </h3>
-                <p className="text-xs text-text-secondary mt-1.5 leading-relaxed">
+                <p className="text-[10px] sm:text-xs text-text-secondary mt-1 sm:mt-1.5 leading-relaxed line-clamp-2">
                   {mod.description}
                 </p>
               </div>
 
               {/* Padlock icon for disabled ones */}
               {!mod.active && (
-                <div className="absolute bottom-4 right-4 text-text-muted">
+                <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 text-text-muted text-sm sm:text-base">
                   🔒
                 </div>
               )}
