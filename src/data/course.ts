@@ -195,23 +195,7 @@ export const COURSE_DATA: Course = {
             ],
           },
         },
-        {
-          id: 'personal-salud',
-          title: 'Salud del Personal',
-          type: 'alert',
-          content: {
-            title: 'Salud del Personal',
-            description: 'No debe manipular alimentos quien presente alguna de estas condiciones:',
-            items: [
-              { text: 'Vómitos o náuseas', icon: '🤢' },
-              { text: 'Diarrea', icon: '⚠️' },
-              { text: 'Fiebre', icon: '🌡️' },
-              { text: 'Heridas infectadas', icon: '🩹' },
-            ],
-            highlight: 'Informar siempre al supervisor ante cualquiera de estas situaciones.',
-            highlightVariant: 'danger',
-          },
-        },
+
       ],
     },
 

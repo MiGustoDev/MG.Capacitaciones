@@ -76,21 +76,26 @@ export function Hub() {
 
   useEffect(() => {
     if (progress.userName) {
-      const duration = 1200 // ms
-      const startTime = performance.now()
+      setAnimatedPercent(0)
+      const timer = setTimeout(() => {
+        const duration = 1200 // ms
+        const startTime = performance.now()
 
-      const animate = (now: number) => {
-        const elapsed = now - startTime
-        const progressRatio = Math.min(elapsed / duration, 1)
-        const ease = progressRatio * (2 - progressRatio) // Ease out quad
-        setAnimatedPercent(Math.round(ease * percentComplete))
+        const animate = (now: number) => {
+          const elapsed = now - startTime
+          const progressRatio = Math.min(elapsed / duration, 1)
+          const ease = progressRatio * (2 - progressRatio) // Ease out quad
+          setAnimatedPercent(Math.round(ease * percentComplete))
 
-        if (progressRatio < 1) {
-          requestAnimationFrame(animate)
+          if (progressRatio < 1) {
+            requestAnimationFrame(animate)
+          }
         }
-      }
 
-      requestAnimationFrame(animate)
+        requestAnimationFrame(animate)
+      }, 700) // Wait for GSAP intro stagger animation to complete
+
+      return () => clearTimeout(timer)
     } else {
       setAnimatedPercent(0)
     }
