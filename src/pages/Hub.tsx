@@ -48,7 +48,7 @@ const MODULES: TrainingModule[] = [
   {
     id: 'atencion',
     title: 'Atención al Cliente',
-    icon: '🤝',
+    icon: '🤝🏻',
     active: false,
     tagline: 'Próximamente',
     description: 'Estándares de servicio en sucursales y experiencia de marca.',
@@ -65,15 +65,39 @@ const MODULES: TrainingModule[] = [
 
 export function Hub() {
   const navigate = usePageNavigate()
-  const { progress, setUserName, logout } = useCourse()
+  const { progress, setUserName, logout, percentComplete } = useCourse()
   const [showModal, setShowModal] = useState(false)
   const [inputName, setInputName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
+  const [animatedPercent, setAnimatedPercent] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const modalOverlayRef = useRef<HTMLDivElement>(null)
   const modalCardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (progress.userName) {
+      const duration = 1200 // ms
+      const startTime = performance.now()
+
+      const animate = (now: number) => {
+        const elapsed = now - startTime
+        const progressRatio = Math.min(elapsed / duration, 1)
+        const ease = progressRatio * (2 - progressRatio) // Ease out quad
+        setAnimatedPercent(Math.round(ease * percentComplete))
+
+        if (progressRatio < 1) {
+          requestAnimationFrame(animate)
+        }
+      }
+
+      requestAnimationFrame(animate)
+    } else {
+      setAnimatedPercent(0)
+    }
+  }, [progress.userName, percentComplete])
+
+  useEffect(() => {
+    document.title = 'Mi Gusto | Capacitaciones'
     if (!containerRef.current) return
     const ctx = gsap.context(() => {
       gsap.timeline()
@@ -178,7 +202,7 @@ export function Hub() {
         {progress.userName && (
           <div className="w-full max-w-3xl mb-6 bg-brand-600/10 border border-brand-600/30 rounded-xl px-5 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div className="flex items-center gap-3 text-left">
-              <span className="text-xl">👤</span>
+              <span className="text-xl">🧑🏻</span>
               <div>
                 <p className="text-xs text-brand-300 font-semibold uppercase tracking-wider">Sesión Activa</p>
                 <h4 className="text-sm font-bold text-white">{progress.userName}</h4>
@@ -223,15 +247,44 @@ export function Hub() {
                 <span className="text-4xl bg-surface/50 p-2.5 rounded-xl border border-surface-border/30">
                   {mod.icon}
                 </span>
-                <span
-                  className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
-                    mod.active
-                      ? 'text-brand-300 bg-brand-500/10 border-brand-500/20'
-                      : 'text-text-muted bg-surface/30 border-surface-border/25'
-                  }`}
-                >
-                  {mod.tagline}
-                </span>
+                {mod.id === 'calidad' && progress.userName ? (
+                  <div className="relative w-12 h-12 flex items-center justify-center flex-shrink-0" title={`Progreso: ${percentComplete}%`}>
+                    <svg className="w-full h-full transform -rotate-90">
+                      {/* Fondo del círculo */}
+                      <circle
+                        cx="24"
+                        cy="24"
+                        r="19"
+                        className="stroke-surface-border/40 fill-none"
+                        strokeWidth="3.5"
+                      />
+                      {/* Progreso del círculo */}
+                      <circle
+                        cx="24"
+                        cy="24"
+                        r="19"
+                        className="stroke-brand-500 fill-none transition-all duration-150 ease-out"
+                        strokeWidth="3.5"
+                        strokeDasharray={2 * Math.PI * 19}
+                        strokeDashoffset={2 * Math.PI * 19 * (1 - animatedPercent / 100)}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span className="absolute text-[10px] font-black text-white">
+                      {animatedPercent}%
+                    </span>
+                  </div>
+                ) : (
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+                      mod.active
+                        ? 'text-brand-300 bg-brand-500/10 border-brand-500/20'
+                        : 'text-text-muted bg-surface/30 border-surface-border/25'
+                    }`}
+                  >
+                    {mod.tagline}
+                  </span>
+                )}
               </div>
 
               <div className="mt-4 relative z-10">
