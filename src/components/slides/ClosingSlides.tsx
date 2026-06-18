@@ -44,9 +44,9 @@ export function CommitmentSlide({ content }: CommitmentSlideProps) {
   )
 }
 
-interface ClosingSlideProps { content: LessonContent; onRestart?: () => void }
+interface ClosingSlideProps { content: LessonContent }
 
-export function ClosingSlide({ content, onRestart }: ClosingSlideProps) {
+export function ClosingSlide({ content }: ClosingSlideProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -55,7 +55,6 @@ export function ClosingSlide({ content, onRestart }: ClosingSlideProps) {
       gsap.timeline()
         .fromTo('.cl-star', { scale: 0, rotation: -180 }, { scale: 1, rotation: 0, duration: 0.7, ease: 'back.out(1.7)' })
         .fromTo('.cl-text', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.12, ease: 'power2.out' }, '-=0.3')
-        .fromTo('.cl-btn', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '-=0.1')
     }, ref)
     return () => ctx.revert()
   }, [])
@@ -95,15 +94,6 @@ export function ClosingSlide({ content, onRestart }: ClosingSlideProps) {
         <span className="text-xl">✅</span>
         <span className="text-brand-400 font-semibold text-sm">Capacitación completada</span>
       </div>
-
-      {onRestart && (
-        <button
-          onClick={onRestart}
-          className="cl-btn opacity-0 btn-secondary text-sm"
-        >
-          🔄 Volver a comenzar
-        </button>
-      )}
     </div>
   )
 }

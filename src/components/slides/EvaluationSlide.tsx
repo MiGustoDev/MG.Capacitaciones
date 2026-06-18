@@ -504,14 +504,22 @@ export function EvaluationSlide() {
             </div>
 
             {/* Botón de acción */}
-            <div className="flex flex-col sm:flex-row gap-3 mt-2">
+            <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full justify-center px-4">
               {isPassedToDisplay ? (
-                <button
-                  onClick={() => setShowReview(!showReview)}
-                  className="btn-secondary px-6 py-3 flex items-center gap-2 text-sm"
-                >
-                  {showReview ? '🙈 Ocultar Revisión' : '🔍 Revisar mis Respuestas'}
-                </button>
+                <>
+                  <button
+                    onClick={() => setShowReview(!showReview)}
+                    className="btn-secondary px-6 py-3 flex items-center justify-center gap-2 text-sm"
+                  >
+                    {showReview ? '🙈 Ocultar Revisión' : '🔍 Revisar Respuestas'}
+                  </button>
+                  <button
+                    onClick={() => goToLesson('cierre', 'cierre-equipo')}
+                    className="btn-primary px-8 py-3.5 flex items-center justify-center gap-2 text-sm font-black shadow-glow text-white"
+                  >
+                    🏁 Ir a la Lección Final
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={() => {
@@ -519,7 +527,7 @@ export function EvaluationSlide() {
                     const firstLess = firstMod.lessons[0]
                     goToLesson(firstMod.id, firstLess.id)
                   }}
-                  className="btn-primary px-8 py-3 flex items-center gap-2 text-sm font-bold"
+                  className="btn-primary px-8 py-3 flex items-center justify-center gap-2 text-sm font-bold"
                 >
                   📖 Repasar Contenido
                 </button>
@@ -527,8 +535,8 @@ export function EvaluationSlide() {
             </div>
 
             {isPassedToDisplay && (
-              <div className="text-xs text-brand-300 bg-brand-500/15 border border-brand-500/30 px-5 py-2.5 rounded-lg max-w-sm mt-3 animate-pulse-slow">
-                👉 Hacé clic en el botón <strong>"Siguiente"</strong> de la barra de navegación inferior para cerrar la capacitación.
+              <div className="text-xs text-brand-300 bg-brand-500/15 border border-brand-500/30 px-5 py-2.5 rounded-lg max-w-sm mt-3">
+                🎉 ¡Felicitaciones! Aprobaste la capacitación. Hacé clic en el botón de arriba para ir a la lección final.
               </div>
             )}
           </div>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
 import type { ProgressState } from '../data/types'
 import { COURSE_DATA, getFlatLessons, getTotalLessons } from '../data/course'
+import { supabase } from '../utils/supabase'
 
 const STORAGE_KEY = 'bpm-mi-gusto-progress'
 
@@ -49,19 +50,20 @@ export function CourseProvider({ children }: { children: ReactNode }) {
   // Synchronize current progress state to the global participants list
   const saveParticipantToGlobalList = useCallback((state: ProgressState) => {
     if (!state.userName) return
+    const data = {
+      userName: state.userName,
+      startedAt: state.startedAt,
+      completedAt: state.completedAt,
+      evaluationScore: state.evaluationScore,
+      evaluationFailed: state.evaluationFailed,
+      completedLessonsCount: state.completedLessons.length,
+      lastUpdated: new Date().toISOString()
+    }
+
     try {
       const saved = localStorage.getItem('bpm-capacitaciones-all-participants')
       const list = saved ? JSON.parse(saved) : []
       const index = list.findIndex((p: any) => p.userName === state.userName)
-      const data = {
-        userName: state.userName,
-        startedAt: state.startedAt,
-        completedAt: state.completedAt,
-        evaluationScore: state.evaluationScore,
-        evaluationFailed: state.evaluationFailed,
-        completedLessonsCount: state.completedLessons.length,
-        lastUpdated: new Date().toISOString()
-      }
       if (index >= 0) {
         list[index] = data
       } else {
@@ -71,6 +73,24 @@ export function CourseProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error(e)
     }
+
+    // Upsert to Supabase database
+    supabase
+      .from('participants')
+      .upsert({
+        user_name: data.userName,
+        started_at: data.startedAt,
+        completed_at: data.completedAt,
+        evaluation_score: data.evaluationScore,
+        evaluation_failed: data.evaluationFailed,
+        completed_lessons_count: data.completedLessonsCount,
+        last_updated: data.lastUpdated,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error al guardar en Supabase:', error)
+        }
+      })
   }, [])
 
   useEffect(() => {
@@ -145,6 +165,21 @@ export function CourseProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error(e)
     }
+
+    // Reset in Supabase database
+    supabase
+      .from('participants')
+      .update({
+        evaluation_score: null,
+        evaluation_failed: null,
+        last_updated: new Date().toISOString(),
+      })
+      .eq('user_name', targetName)
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error al reiniciar evaluación en Supabase:', error)
+        }
+      })
 
     setProgress(prev => {
       if (prev.userName === targetName) {

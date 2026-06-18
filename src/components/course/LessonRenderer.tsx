@@ -37,7 +37,7 @@ export function LessonRenderer({ lesson, module }: LessonRendererProps) {
     case 'commitment':
       return <CommitmentSlide key={lesson.id} content={lesson.content} />
     case 'closing':
-      return <ClosingSlide key={lesson.id} content={lesson.content} onRestart={resetProgress} />
+      return <ClosingSlide key={lesson.id} content={lesson.content} />
     case 'evaluation':
       return <EvaluationSlide key={lesson.id} />
     default:

@@ -9,7 +9,7 @@ import { Sidebar } from '../components/layout/Sidebar'
 import { LessonNav, TopBar } from '../components/layout/LessonNav'
 
 export function Course() {
-  const { progress, isEvaluationActive } = useCourse()
+  const { progress, isEvaluationActive, isLessonCompleted, goToLesson } = useCourse()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const prevKey = useRef('')
@@ -20,10 +20,16 @@ export function Course() {
   const module = COURSE_DATA.modules.find(m => m.id === progress.currentModuleId)
   const lesson = module?.lessons.find(l => l.id === progress.currentLessonId)
 
-  // If no valid state found, redirect to landing
+  // If no valid state found or accessing final lesson without passing the exam, redirect
   useEffect(() => {
-    if (!module || !lesson) guardNavigate('/')
-  }, [module, lesson, guardNavigate])
+    if (!module || !lesson) {
+      guardNavigate('/')
+      return
+    }
+    if (lesson.id === 'cierre-equipo' && !isLessonCompleted('evaluacion-test')) {
+      goToLesson('cierre', 'evaluacion-test')
+    }
+  }, [module, lesson, guardNavigate, isLessonCompleted, goToLesson])
 
   // Slide transition animation when lesson changes
   const lessonKey = `${progress.currentModuleId}-${progress.currentLessonId}`

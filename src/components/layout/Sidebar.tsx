@@ -15,19 +15,23 @@ function LessonItem({
   module,
   isCurrent,
   isCompleted,
+  isLocked,
   onClick,
 }: {
   lesson: Lesson
   module: Module
   isCurrent: boolean
   isCompleted: boolean
+  isLocked: boolean
   onClick: () => void
 }) {
   return (
     <button
-      onClick={onClick}
+      onClick={isLocked ? undefined : onClick}
+      disabled={isLocked}
       aria-current={isCurrent ? 'step' : undefined}
       className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150
+        ${isLocked ? 'opacity-40 cursor-not-allowed' : ''}
         ${isCurrent
           ? 'bg-brand-600/20 text-brand-400 font-semibold border border-brand-600/40'
           : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated'
@@ -36,11 +40,13 @@ function LessonItem({
       <span className={`flex-shrink-0 w-5 h-5 rounded-full border text-xs flex items-center justify-center
         ${isCompleted
           ? 'bg-brand-600 border-brand-600 text-white'
+          : isLocked
+          ? 'border-surface-border text-text-muted bg-surface/50'
           : isCurrent
           ? 'border-brand-600 text-brand-400'
           : 'border-surface-border text-text-muted'
         }`}>
-        {isCompleted ? '✓' : ''}
+        {isCompleted ? '✓' : isLocked ? '🔒' : ''}
       </span>
       <span className="leading-tight">{lesson.title}</span>
     </button>
@@ -157,22 +163,27 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               </div>
               {/* Lessons */}
               <div className="flex flex-col gap-1">
-                {mod.lessons.map(lesson => (
-                  <LessonItem
-                    key={lesson.id}
-                    lesson={lesson}
-                    module={mod}
-                    isCurrent={
-                      lesson.id === progress.currentLessonId &&
-                      mod.id === progress.currentModuleId
-                    }
-                    isCompleted={isLessonCompleted(lesson.id)}
-                    onClick={() => {
-                      goToLesson(mod.id, lesson.id)
-                      handleClose()
-                    }}
-                  />
-                ))}
+                {mod.lessons.map(lesson => {
+                  const isLocked = lesson.id === 'cierre-equipo' && !isLessonCompleted('evaluacion-test')
+                  
+                  return (
+                    <LessonItem
+                      key={lesson.id}
+                      lesson={lesson}
+                      module={mod}
+                      isCurrent={
+                        lesson.id === progress.currentLessonId &&
+                        mod.id === progress.currentModuleId
+                      }
+                      isCompleted={isLessonCompleted(lesson.id)}
+                      isLocked={isLocked}
+                      onClick={() => {
+                        goToLesson(mod.id, lesson.id)
+                        handleClose()
+                      }}
+                    />
+                  )
+                })}
               </div>
             </div>
           )
