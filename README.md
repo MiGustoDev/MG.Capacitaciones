@@ -113,7 +113,7 @@ Cada lección utiliza tipos de slide especializados — hero, listas, comparativ
 
 **Desarrollado por el Departamento de Sistemas de Mi Gusto** 🥟
 
-*Capacitación obligatoria · Inocuidad alimentaria · Calidad*
+*Capacitación · Inocuidad alimentaria · Calidad*
 
 <br />
 
