@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import gsap from 'gsap'
 import { useCourse } from '../context/CourseContext'
 import { usePageNavigate } from '../hooks/usePageNavigate'
@@ -242,7 +243,7 @@ export function Hub() {
       </footer>
 
       {/* Name Input Modal */}
-      {showModal && (
+      {showModal && createPortal(
         <div
           ref={modalOverlayRef}
           className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
@@ -291,7 +292,8 @@ export function Hub() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
