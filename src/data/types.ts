@@ -101,4 +101,5 @@ export interface ProgressState {
   userName?: string
   evaluationScore?: number
   evaluationFailed?: boolean
+  trainingId?: string
 }

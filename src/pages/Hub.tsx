@@ -3,66 +3,7 @@ import gsap from 'gsap'
 import { useCourse } from '../context/CourseContext'
 import { usePageNavigate } from '../hooks/usePageNavigate'
 import { getAssetUrl } from '../utils/assets'
-
-interface TrainingModule {
-  id: string
-  title: string
-  icon: string
-  active: boolean
-  tagline: string
-  description: string
-}
-
-const MODULES: TrainingModule[] = [
-  {
-    id: 'calidad',
-    title: 'Calidad (BPM)',
-    icon: '🛡️',
-    active: true,
-    tagline: 'Obligatorio y Disponible',
-    description: 'Buenas Prácticas de Manufactura en elaboración de alimentos.',
-  },
-  {
-    id: 'seguridad',
-    title: 'Seguridad e Higiene',
-    icon: '🦺',
-    active: false,
-    tagline: 'Próximamente',
-    description: 'Prevención de riesgos laborales y uso de elementos de protección.',
-  },
-  {
-    id: 'operaciones',
-    title: 'Operaciones de Planta',
-    icon: '⚙️',
-    active: false,
-    tagline: 'Próximamente',
-    description: 'Uso eficiente de maquinarias, hornos y equipos productivos.',
-  },
-  {
-    id: 'logistica',
-    title: 'Logística y Despacho',
-    icon: '📦',
-    active: false,
-    tagline: 'Próximamente',
-    description: 'Preparación de pedidos, almacenamiento y cadena de frío.',
-  },
-  {
-    id: 'atencion',
-    title: 'Atención al Cliente',
-    icon: '🤝🏻',
-    active: false,
-    tagline: 'Próximamente',
-    description: 'Estándares de servicio en sucursales y experiencia de marca.',
-  },
-  {
-    id: 'mantenimiento',
-    title: 'Mantenimiento Preventivo',
-    icon: '🔧',
-    active: false,
-    tagline: 'Próximamente',
-    description: 'Limpieza técnica, calibración y conservación de activos.',
-  },
-]
+import { TRAININGS, type Training } from '../data/trainings'
 
 export function Hub() {
   const navigate = usePageNavigate()
@@ -71,6 +12,7 @@ export function Hub() {
   const [inputName, setInputName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const [animatedPercent, setAnimatedPercent] = useState(0)
+  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const modalOverlayRef = useRef<HTMLDivElement>(null)
   const modalCardRef = useRef<HTMLDivElement>(null)
@@ -154,12 +96,13 @@ export function Hub() {
       .to(modalOverlayRef.current, { opacity: 0, duration: 0.15, ease: 'power1.in' }, '-=0.05')
   }
 
-  const handleModuleClick = (mod: TrainingModule) => {
+  const handleModuleClick = (mod: Training) => {
     if (!mod.active) return
     
     if (progress.userName) {
-      navigate('/calidad')
+      navigate(mod.id === 'calidad' ? '/calidad' : `/${mod.id}`)
     } else {
+      setSelectedModuleId(mod.id)
       setShowModal(true)
     }
   }
@@ -175,9 +118,10 @@ export function Hub() {
       setErrorMsg('Ingresá tu nombre completo (mínimo 4 caracteres).')
       return
     }
-    setUserName(trimmed)
+    setUserName(trimmed, selectedModuleId || 'calidad')
     setShowModal(false)
-    navigate('/calidad')
+    const targetPath = selectedModuleId === 'calidad' ? '/calidad' : `/${selectedModuleId || 'calidad'}`
+    navigate(targetPath)
   }
 
   return (
@@ -223,7 +167,7 @@ export function Hub() {
 
         {/* 2x3 Button Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 w-full max-w-5xl">
-          {MODULES.map((mod) => (
+          {TRAININGS.map((mod) => (
             <button
               key={mod.id}
               onClick={() => handleModuleClick(mod)}

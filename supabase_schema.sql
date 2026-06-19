@@ -1,12 +1,14 @@
--- 1. Crear la tabla de participantes
+-- 1. Crear la tabla de participantes con clave primaria compuesta
 CREATE TABLE public.participants (
-    user_name TEXT PRIMARY KEY,
+    user_name TEXT NOT NULL,
+    training_id TEXT NOT NULL DEFAULT 'calidad',
     started_at TIMESTAMP WITH TIME ZONE,
     completed_at TIMESTAMP WITH TIME ZONE,
     evaluation_score INTEGER,
     evaluation_failed BOOLEAN,
     completed_lessons_count INTEGER NOT NULL DEFAULT 0,
-    last_updated TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    PRIMARY KEY (user_name, training_id)
 );
 
 -- 2. Habilitar la seguridad a nivel de fila (Row Level Security - RLS)

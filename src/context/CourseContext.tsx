@@ -24,9 +24,9 @@ interface CourseContextValue {
   resetProgress: () => void
   isEvaluationActive: boolean
   setIsEvaluationActive: (active: boolean) => void
-  setUserName: (name: string) => void
+  setUserName: (name: string, trainingId?: string) => void
   setEvaluationResult: (score: number, failed: boolean) => void
-  resetUserEvaluation: (userName: string) => void
+  resetUserEvaluation: (userName: string, trainingId: string) => void
   logout: () => void
 }
 
@@ -57,13 +57,14 @@ export function CourseProvider({ children }: { children: ReactNode }) {
       evaluationScore: state.evaluationScore,
       evaluationFailed: state.evaluationFailed,
       completedLessonsCount: state.completedLessons.length,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
+      trainingId: state.trainingId || 'calidad'
     }
 
     try {
       const saved = localStorage.getItem('bpm-capacitaciones-all-participants')
       const list = saved ? JSON.parse(saved) : []
-      const index = list.findIndex((p: any) => p.userName === state.userName)
+      const index = list.findIndex((p: any) => p.userName === state.userName && p.trainingId === data.trainingId)
       if (index >= 0) {
         list[index] = data
       } else {
@@ -85,6 +86,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
         evaluation_failed: data.evaluationFailed,
         completed_lessons_count: data.completedLessonsCount,
         last_updated: data.lastUpdated,
+        training_id: data.trainingId
       })
       .then(({ error }) => {
         if (error) {
@@ -133,10 +135,11 @@ export function CourseProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
-  const setUserName = useCallback((name: string) => {
+  const setUserName = useCallback((name: string, trainingId?: string) => {
     setProgress(prev => ({
       ...prev,
       userName: name,
+      trainingId: trainingId || prev.trainingId || 'calidad',
       startedAt: prev.startedAt || new Date().toISOString(),
     }))
   }, [])
@@ -150,12 +153,12 @@ export function CourseProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
-  const resetUserEvaluation = useCallback((targetName: string) => {
+  const resetUserEvaluation = useCallback((targetName: string, trainingId: string) => {
     try {
       const saved = localStorage.getItem('bpm-capacitaciones-all-participants')
       if (saved) {
         const list = JSON.parse(saved)
-        const index = list.findIndex((p: any) => p.userName === targetName)
+        const index = list.findIndex((p: any) => p.userName === targetName && p.trainingId === trainingId)
         if (index >= 0) {
           list[index].evaluationFailed = undefined
           list[index].evaluationScore = undefined
@@ -175,6 +178,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
         last_updated: new Date().toISOString(),
       })
       .eq('user_name', targetName)
+      .eq('training_id', trainingId)
       .then(({ error }) => {
         if (error) {
           console.error('Error al reiniciar evaluación en Supabase:', error)
@@ -182,7 +186,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
       })
 
     setProgress(prev => {
-      if (prev.userName === targetName) {
+      if (prev.userName === targetName && (prev.trainingId || 'calidad') === trainingId) {
         return {
           ...prev,
           evaluationFailed: undefined,
