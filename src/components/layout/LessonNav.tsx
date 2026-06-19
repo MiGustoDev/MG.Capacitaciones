@@ -1,5 +1,5 @@
 import { useCourse } from '../../context/CourseContext'
-import { COURSE_DATA, getNextLesson, getPrevLesson } from '../../data/course'
+import { getNextLesson, getPrevLesson } from '../../data/course'
 import { GlobalProgressBar } from '../course/LessonRenderer'
 import { getAssetUrl } from '../../utils/assets'
 
@@ -9,11 +9,11 @@ interface LessonNavProps {
 }
 
 export function LessonNav({ currentModuleId, currentLessonId }: LessonNavProps) {
-  const { goToLesson, markCurrentComplete, isLessonCompleted } = useCourse()
-  const prev = getPrevLesson(currentModuleId, currentLessonId)
-  const next = getNextLesson(currentModuleId, currentLessonId)
+  const { goToLesson, markCurrentComplete, isLessonCompleted, courseData } = useCourse()
+  const prev = getPrevLesson(courseData, currentModuleId, currentLessonId)
+  const next = getNextLesson(courseData, currentModuleId, currentLessonId)
 
-  const module = COURSE_DATA.modules.find(m => m.id === currentModuleId)
+  const module = courseData.modules.find(m => m.id === currentModuleId)
   const lesson = module?.lessons.find(l => l.id === currentLessonId)
   const isEvaluation = lesson?.type === 'evaluation'
   const isCompleted = lesson ? isLessonCompleted(lesson.id) : false
@@ -65,10 +65,11 @@ interface TopBarProps {
 }
 
 export function TopBar({ currentModuleId, currentLessonId, onMenuToggle }: TopBarProps) {
-  const module = COURSE_DATA.modules.find(m => m.id === currentModuleId)
+  const { courseData } = useCourse()
+  const module = courseData.modules.find(m => m.id === currentModuleId)
   const lesson = module?.lessons.find(l => l.id === currentLessonId)
 
-  const moduleIndex = COURSE_DATA.modules.findIndex(m => m.id === currentModuleId)
+  const moduleIndex = courseData.modules.findIndex(m => m.id === currentModuleId)
   const lessonIndex = module?.lessons.findIndex(l => l.id === currentLessonId) ?? 0
 
   return (

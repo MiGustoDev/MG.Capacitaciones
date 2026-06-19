@@ -4,14 +4,14 @@ import { useCourse } from '../context/CourseContext'
 import { usePageNavigate } from '../hooks/usePageNavigate'
 import { getAssetUrl } from '../utils/assets'
 import { TRAININGS, type Training } from '../data/trainings'
+import { COURSES_DATA, getTotalLessons } from '../data/course'
 
 export function Hub() {
   const navigate = usePageNavigate()
-  const { progress, setUserName, logout, percentComplete } = useCourse()
+  const { progress, setUserName, logout } = useCourse()
   const [showModal, setShowModal] = useState(false)
   const [inputName, setInputName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
-  const [animatedPercent, setAnimatedPercent] = useState(0)
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const modalOverlayRef = useRef<HTMLDivElement>(null)
@@ -25,33 +25,6 @@ export function Hub() {
     if (masculineExceptions.includes(firstName)) return '👨🏻'
     return firstName.endsWith('a') ? '👩🏻' : '👨🏻'
   }
-
-  useEffect(() => {
-    if (progress.userName) {
-      setAnimatedPercent(0)
-      const timer = setTimeout(() => {
-        const duration = 1200 // ms
-        const startTime = performance.now()
-
-        const animate = (now: number) => {
-          const elapsed = now - startTime
-          const progressRatio = Math.min(elapsed / duration, 1)
-          const ease = progressRatio * (2 - progressRatio) // Ease out quad
-          setAnimatedPercent(Math.round(ease * percentComplete))
-
-          if (progressRatio < 1) {
-            requestAnimationFrame(animate)
-          }
-        }
-
-        requestAnimationFrame(animate)
-      }, 700) // Wait for GSAP intro stagger animation to complete
-
-      return () => clearTimeout(timer)
-    } else {
-      setAnimatedPercent(0)
-    }
-  }, [progress.userName, percentComplete])
 
   useEffect(() => {
     document.title = 'Mi Gusto | Capacitaciones'
@@ -124,6 +97,21 @@ export function Hub() {
     navigate(targetPath)
   }
 
+  const getTrainingProgressPercent = (trainingId: string) => {
+    try {
+      const saved = localStorage.getItem(`bpm-mi-gusto-progress_${trainingId}`)
+      if (!saved) return 0
+      const parsed = JSON.parse(saved)
+      const courseDataObj = COURSES_DATA[trainingId]
+      if (!courseDataObj) return 0
+      const total = getTotalLessons(courseDataObj)
+      const completed = parsed.completedLessons?.length || 0
+      return Math.round((completed / total) * 100)
+    } catch {
+      return 0
+    }
+  }
+
   return (
     <div ref={containerRef} className="min-h-dvh bg-gradient-dark flex flex-col justify-between text-text-primary px-4 py-8 md:px-8">
       <header className="w-full max-w-6xl mx-auto flex justify-between items-center mb-10">
@@ -163,87 +151,88 @@ export function Hub() {
           </p>
         </div>
 
-
-
         {/* 2x3 Button Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 w-full max-w-5xl">
-          {TRAININGS.map((mod) => (
-            <button
-              key={mod.id}
-              onClick={() => handleModuleClick(mod)}
-              disabled={!mod.active}
-              className={`hub-card opacity-0 text-left rounded-2xl border p-3.5 sm:p-6 flex flex-col justify-between h-40 sm:h-56 transition-all duration-300 relative group overflow-hidden ${
-                mod.active
-                  ? 'bg-surface-card hover:bg-surface-elevated border-brand-600/40 hover:border-brand-500 hover:shadow-glow cursor-pointer hover:-translate-y-1'
-                  : 'bg-surface/30 border-surface-border/40 opacity-50 cursor-not-allowed'
-              }`}
-            >
-              {/* Card glowing backdrop for active card */}
-              {mod.active && (
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              )}
-
-              <div className="flex justify-between items-start w-full relative z-10">
-                <span className="text-2xl sm:text-4xl bg-surface/50 p-1.5 sm:p-2.5 rounded-xl border border-surface-border/30">
-                  {mod.icon}
-                </span>
-                {mod.id === 'calidad' && progress.userName ? (
-                  <div className="relative w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0" title={`Progreso: ${percentComplete}%`}>
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
-                      {/* Fondo del círculo */}
-                      <circle
-                        cx="24"
-                        cy="24"
-                        r="19"
-                        className="stroke-surface-border/40 fill-none"
-                        strokeWidth="3.5"
-                      />
-                      {/* Progreso del círculo */}
-                      <circle
-                        cx="24"
-                        cy="24"
-                        r="19"
-                        className="stroke-brand-500 fill-none transition-all duration-150 ease-out"
-                        strokeWidth="3.5"
-                        strokeDasharray={2 * Math.PI * 19}
-                        strokeDashoffset={2 * Math.PI * 19 * (1 - animatedPercent / 100)}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <span className="absolute text-[8px] sm:text-[10px] font-black text-white">
-                      {animatedPercent}%
-                    </span>
-                  </div>
-                ) : (
-                  <span
-                    className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border ${
-                      mod.active
-                        ? 'text-brand-300 bg-brand-500/10 border-brand-500/20'
-                        : 'text-text-muted bg-surface/30 border-surface-border/25'
-                    }`}
-                  >
-                    {mod.active ? mod.tagline : 'Próx.'}
-                  </span>
+          {TRAININGS.map((mod) => {
+            const percent = getTrainingProgressPercent(mod.id)
+            return (
+              <button
+                key={mod.id}
+                onClick={() => handleModuleClick(mod)}
+                disabled={!mod.active}
+                className={`hub-card opacity-0 text-left rounded-2xl border p-3.5 sm:p-6 flex flex-col justify-between h-40 sm:h-56 transition-all duration-300 relative group overflow-hidden ${
+                  mod.active
+                    ? 'bg-surface-card hover:bg-surface-elevated border-brand-600/40 hover:border-brand-500 hover:shadow-glow cursor-pointer hover:-translate-y-1'
+                    : 'bg-surface/30 border-surface-border/40 opacity-50 cursor-not-allowed'
+                }`}
+              >
+                {/* Card glowing backdrop for active card */}
+                {mod.active && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-brand-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 )}
-              </div>
 
-              <div className="mt-2 sm:mt-4 relative z-10">
-                <h3 className="text-xs sm:text-fluid-lg font-bold text-text-primary group-hover:text-brand-400 transition-colors leading-tight">
-                  {mod.title}
-                </h3>
-                <p className="text-[10px] sm:text-xs text-text-secondary mt-1 sm:mt-1.5 leading-relaxed line-clamp-2">
-                  {mod.description}
-                </p>
-              </div>
-
-              {/* Padlock icon for disabled ones */}
-              {!mod.active && (
-                <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 text-text-muted text-sm sm:text-base">
-                  🔒
+                <div className="flex justify-between items-start w-full relative z-10">
+                  <span className="text-2xl sm:text-4xl bg-surface/50 p-1.5 sm:p-2.5 rounded-xl border border-surface-border/30">
+                    {mod.icon}
+                  </span>
+                  {mod.active && progress.userName ? (
+                    <div className="relative w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0" title={`Progreso: ${percent}%`}>
+                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
+                        {/* Fondo del círculo */}
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="19"
+                          className="stroke-surface-border/40 fill-none"
+                          strokeWidth="3.5"
+                        />
+                        {/* Progreso del círculo */}
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="19"
+                          className="stroke-brand-500 fill-none transition-all duration-700 ease-out"
+                          strokeWidth="3.5"
+                          strokeDasharray={2 * Math.PI * 19}
+                          strokeDashoffset={2 * Math.PI * 19 * (1 - percent / 100)}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <span className="absolute text-[8px] sm:text-[10px] font-black text-white">
+                        {percent}%
+                      </span>
+                    </div>
+                  ) : (
+                    <span
+                      className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border ${
+                        mod.active
+                          ? 'text-brand-300 bg-brand-500/10 border-brand-500/20'
+                          : 'text-text-muted bg-surface/30 border-surface-border/25'
+                      }`}
+                    >
+                      {mod.active ? mod.tagline : 'Próx.'}
+                    </span>
+                  )}
                 </div>
-              )}
-            </button>
-          ))}
+
+                <div className="mt-2 sm:mt-4 relative z-10">
+                  <h3 className="text-xs sm:text-fluid-lg font-bold text-text-primary group-hover:text-brand-400 transition-colors leading-tight">
+                    {mod.title}
+                  </h3>
+                  <p className="text-[10px] sm:text-xs text-text-secondary mt-1 sm:mt-1.5 leading-relaxed line-clamp-2">
+                    {mod.description}
+                  </p>
+                </div>
+
+                {/* Padlock icon for disabled ones */}
+                {!mod.active && (
+                  <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 text-text-muted text-sm sm:text-base">
+                    🔒
+                  </div>
+                )}
+              </button>
+            )
+          })}
         </div>
       </main>
 

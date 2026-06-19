@@ -20,11 +20,11 @@ export const TRAININGS: Training[] = [
   },
   {
     id: 'armado',
-    title: 'Armado de Empanadas',
+    title: 'Armado',
     shortTitle: 'Armado',
     icon: '🥟',
-    active: false,
-    tagline: 'Próximamente',
+    active: true,
+    tagline: 'Disponible',
     description: 'Técnicas de armado, repulgue y control de calidad de empanadas.',
   },
   {

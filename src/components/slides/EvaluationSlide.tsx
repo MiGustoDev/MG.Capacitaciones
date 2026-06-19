@@ -2,188 +2,24 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import gsap from 'gsap'
 import { useCourse } from '../../context/CourseContext'
 import { useGSAPEntrance } from '../../hooks/useGSAPEntrance'
-import { getFlatLessons, COURSE_DATA } from '../../data/course'
-
-interface Question {
-  id: number
-  question: string
-  options: string[]
-  correctAnswer: number // 0-indexed (0=A, 1=B, 2=C, 3=D)
-}
-
-const QUESTIONS: Question[] = [
-  {
-    id: 1,
-    question: "Las Buenas Prácticas de Manufactura tienen como finalidad principal:",
-    options: [
-      "A) Estandarizar los procesos productivos para mejorar la eficiencia.",
-      "B) Garantizar que los alimentos sean producidos bajo condiciones que minimicen riesgos para la salud del consumidor.",
-      "C) Reducir los costos asociados a reclamos y devoluciones.",
-      "D) Mejorar la calidad organoléptica de los productos elaborados."
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 2,
-    question: "Respecto a la higiene personal, puede afirmarse que:",
-    options: [
-      "A) Constituye una medida complementaria a los controles operacionales.",
-      "B) Es importante únicamente en las etapas finales de elaboración.",
-      "C) Es una de las barreras fundamentales para prevenir la contaminación de los alimentos.",
-      "D) Tiene impacto solamente cuando existe contacto directo con el producto."
-    ],
-    correctAnswer: 2
-  },
-  {
-    id: 3,
-    question: "El uso de elementos personales en áreas productivas se encuentra restringido porque:",
-    options: [
-      "A) Puede interferir con la correcta ejecución de las tareas.",
-      "B) Dificulta la limpieza y desinfección de las instalaciones.",
-      "C) Incrementa la probabilidad de contaminación física del producto.",
-      "D) Genera incumplimientos relacionados con la imagen corporativa."
-    ],
-    correctAnswer: 2
-  },
-  {
-    id: 4,
-    question: "Una instalación diseñada bajo criterios de BPM debe:",
-    options: [
-      "A) Facilitar la circulación del personal y materiales minimizando riesgos de contaminación.",
-      "B) Priorizar la utilización eficiente del espacio disponible.",
-      "C) Permitir la máxima capacidad productiva posible.",
-      "D) Adaptarse a las necesidades operativas de cada turno."
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 5,
-    question: "La correcta identificación de materias primas y productos tiene como principal objetivo:",
-    options: [
-      "A) Optimizar la gestión del almacén.",
-      "B) Facilitar el control de inventarios.",
-      "C) Garantizar la trazabilidad y evitar errores operativos.",
-      "D) Mejorar la organización visual de los sectores."
-    ],
-    correctAnswer: 2
-  },
-  {
-    id: 6,
-    question: "El lavado de manos se considera una medida crítica porque:",
-    options: [
-      "A) Reduce la presencia de contaminantes que pueden transferirse al alimento.",
-      "B) Disminuye el desgaste de los guantes.",
-      "C) Permite mantener una mejor presentación personal.",
-      "D) Favorece el cumplimiento de los procedimientos de ingreso."
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 7,
-    question: "La presencia de condensación en áreas de producción representa un riesgo debido a que:",
-    options: [
-      "A) Puede afectar la temperatura ambiente.",
-      "B) Puede favorecer la transferencia de contaminantes hacia el producto.",
-      "C) Incrementa los tiempos de limpieza.",
-      "D) Reduce la eficiencia de los equipos."
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 8,
-    question: "Los programas de limpieza y desinfección tienen como propósito:",
-    options: [
-      "A) Mantener el orden visual de la planta.",
-      "B) Asegurar condiciones adecuadas para prevenir fuentes de contaminación.",
-      "C) Reducir el desgaste de los equipos.",
-      "D) Mejorar la productividad de los sectores."
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 9,
-    question: "Una desviación en el cumplimiento de BPM puede provocar:",
-    options: [
-      "A) Incremento de costos operativos.",
-      "B) Retrasos en la producción.",
-      "C) Pérdida de la inocuidad del alimento.",
-      "D) Disminución de la eficiencia del proceso."
-    ],
-    correctAnswer: 2
-  },
-  {
-    id: 10,
-    question: "La responsabilidad sobre el cumplimiento de BPM corresponde:",
-    options: [
-      "A) Al departamento de Calidad.",
-      "B) A supervisores y jefaturas.",
-      "C) Al personal que manipula alimentos.",
-      "D) A toda persona que participe en actividades relacionadas con el producto."
-    ],
-    correctAnswer: 3
-  },
-  {
-    id: 11,
-    question: "La capacitación en BPM es necesaria porque:",
-    options: [
-      "A) Permite cumplir requisitos normativos.",
-      "B) Facilita la estandarización de tareas.",
-      "C) Contribuye a que el personal comprenda y aplique prácticas que protejan la inocuidad.",
-      "D) Mejora el desempeño general de la organización."
-    ],
-    correctAnswer: 2
-  },
-  {
-    id: 12,
-    question: "Una correcta gestión de residuos busca principalmente:",
-    options: [
-      "A) Mantener la planta ordenada.",
-      "B) Evitar la generación de focos de contaminación y atracción de plagas.",
-      "C) Reducir el volumen de desperdicios.",
-      "D) Optimizar los tiempos de limpieza."
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 13,
-    question: "El concepto de contaminación cruzada se relaciona con:",
-    options: [
-      "A) La mezcla accidental de diferentes lotes.",
-      "B) La transferencia de contaminantes entre personas, superficies, equipos o alimentos.",
-      "C) El uso simultáneo de distintas materias primas.",
-      "D) El almacenamiento compartido de materiales."
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 14,
-    question: "La trazabilidad dentro de un sistema BPM permite:",
-    options: [
-      "A) Conocer el rendimiento de cada línea.",
-      "B) Reconstruir la historia y recorrido de un producto.",
-      "C) Mejorar la gestión de compras.",
-      "D) Optimizar la planificación de la producción."
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 15,
-    question: "La aplicación efectiva de BPM puede considerarse:",
-    options: [
-      "A) Un requisito documental.",
-      "B) Una herramienta preventiva para proteger al consumidor.",
-      "C) Un mecanismo para reducir costos.",
-      "D) Un sistema de control exclusivo del producto terminado."
-    ],
-    correctAnswer: 1
-  }
-]
+import { getFlatLessons } from '../../data/course'
 
 export function EvaluationSlide() {
-  const { progress, markCurrentComplete, isLessonCompleted, setIsEvaluationActive, setEvaluationResult, goToLesson } = useCourse()
+  const {
+    progress,
+    markCurrentComplete,
+    isLessonCompleted,
+    setIsEvaluationActive,
+    setEvaluationResult,
+    goToLesson,
+    courseData
+  } = useCourse()
+  
+  const QUESTIONS = courseData.questions || []
+  const passScore = courseData.passScore || 12
   const containerRef = useGSAPEntrance({ y: 20, duration: 0.5 })
 
-  const flat = getFlatLessons()
+  const flat = getFlatLessons(courseData)
   const requiredLessons = flat.filter(l => l.id !== 'evaluacion-test' && l.id !== 'cierre-equipo')
   const completedRequired = requiredLessons.filter(l => isLessonCompleted(l.id)).length
   const isUnlocked = completedRequired === requiredLessons.length
@@ -226,7 +62,6 @@ export function EvaluationSlide() {
 
   // Calificación
   const correctCount = QUESTIONS.filter((q, index) => answers[index] === q.correctAnswer).length
-  const passScore = 12 // 80% de 15 es 12
   const passed = correctCount >= passScore
 
   const alreadyFailed = progress.evaluationFailed === true
@@ -311,15 +146,6 @@ export function EvaluationSlide() {
     }
   }
 
-  const handleRetry = () => {
-    transitionTo('quiz', () => {
-      setAnswers({})
-      setCurrentIdx(0)
-      setIsEvaluationActive(true)
-      setShowReview(false)
-    })
-  }
-
   return (
     <div ref={containerRef} className="w-full max-w-3xl mx-auto flex flex-col gap-6">
       {/* Animated state panel wrapper */}
@@ -332,18 +158,18 @@ export function EvaluationSlide() {
           </div>
           <div className="flex flex-col gap-2">
             <h2 className="text-fluid-3xl font-extrabold text-text-primary">
-              Evaluación Final de BPM
+              Evaluación Final de {courseData.title}
             </h2>
             <p className="text-text-secondary max-w-md mx-auto leading-relaxed">
               Es momento de evaluar lo aprendido. <br />
-              Para aprobar y finalizar la capacitacion, debés responder correctamente la evaluacion obligatoria.
+              Para aprobar y finalizar la capacitación, debés responder correctamente la evaluación obligatoria.
             </p>
           </div>
 
           <div className="w-full max-w-sm bg-surface-elevated/50 border border-surface-border rounded-xl p-5 text-left flex flex-col gap-3">
             <div className="flex justify-between items-center text-sm border-b border-surface-border/50 pb-2">
               <span className="text-text-muted">Total de preguntas:</span>
-              <span className="text-text-primary font-bold">15 preguntas</span>
+              <span className="text-text-primary font-bold">{QUESTIONS.length} preguntas</span>
             </div>
             <div className="flex justify-between items-center text-sm border-b border-surface-border/50 pb-2">
               <span className="text-text-muted">Modalidad:</span>
@@ -351,7 +177,7 @@ export function EvaluationSlide() {
             </div>
             <div className="flex justify-between items-center text-sm border-b border-surface-border/50 pb-2">
               <span className="text-text-muted">Puntaje de aprobación:</span>
-              <span className="text-brand-400 font-bold">80% (mínimo 12 correctas)</span>
+              <span className="text-brand-400 font-bold">mínimo {passScore} correctas</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-text-muted">Tiempo estimado:</span>
@@ -406,7 +232,7 @@ export function EvaluationSlide() {
           <div className="flex justify-between items-center border-b border-surface-border pb-4">
             <div className="flex flex-col">
               <span className="text-xs text-brand-400 font-bold uppercase tracking-wider">
-                Evaluación BPM
+                Evaluación {courseData.title}
               </span>
               <h2 className="text-sm text-text-muted mt-0.5">
                 Pregunta {currentIdx + 1} de {QUESTIONS.length}
@@ -422,35 +248,37 @@ export function EvaluationSlide() {
           </div>
 
           {/* Pregunta */}
-          <div ref={questionRef} className="flex flex-col gap-4">
-            <h3 className="text-fluid-xl font-bold text-text-primary leading-snug">
-              {QUESTIONS[currentIdx].question}
-            </h3>
-            
-            {/* Opciones */}
-            <div className="flex flex-col gap-3 mt-2">
-              {QUESTIONS[currentIdx].options.map((option, idx) => {
-                const isSelected = answers[currentIdx] === idx
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => handleSelectOption(idx)}
-                    className={`w-full text-left p-4 rounded-xl border text-fluid-base transition-all duration-150 flex items-start gap-3
-                      ${isSelected
-                        ? 'border-brand-500 bg-brand-600/20 text-brand-300 font-semibold shadow-glow'
-                        : 'border-surface-border bg-surface-elevated hover:bg-surface-border text-text-primary'
-                      }`}
-                  >
-                    <span className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center mt-0.5 text-xs
-                      ${isSelected ? 'bg-brand-500 border-brand-500 text-white' : 'border-text-muted'}`}>
-                      {isSelected && '✓'}
-                    </span>
-                    <span className="leading-tight">{option}</span>
-                  </button>
-                )
-              })}
+          {QUESTIONS[currentIdx] && (
+            <div ref={questionRef} className="flex flex-col gap-4">
+              <h3 className="text-fluid-xl font-bold text-text-primary leading-snug">
+                {QUESTIONS[currentIdx].question}
+              </h3>
+              
+              {/* Opciones */}
+              <div className="flex flex-col gap-3 mt-2">
+                {QUESTIONS[currentIdx].options.map((option, idx) => {
+                  const isSelected = answers[currentIdx] === idx
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleSelectOption(idx)}
+                      className={`w-full text-left p-4 rounded-xl border text-fluid-base transition-all duration-150 flex items-start gap-3
+                        ${isSelected
+                          ? 'border-brand-500 bg-brand-600/20 text-brand-300 font-semibold shadow-glow'
+                          : 'border-surface-border bg-surface-elevated hover:bg-surface-border text-text-primary'
+                        }`}
+                    >
+                      <span className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center mt-0.5 text-xs
+                        ${isSelected ? 'bg-brand-500 border-brand-500 text-white' : 'border-text-muted'}`}>
+                        {isSelected && '✓'}
+                      </span>
+                      <span className="leading-tight">{option}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Botones de Navegación del Quiz */}
           <div className="flex justify-between items-center pt-4 border-t border-surface-border mt-4">
@@ -486,7 +314,7 @@ export function EvaluationSlide() {
               </h2>
               <p className="text-text-secondary text-sm max-w-md mx-auto px-4 leading-relaxed">
                 {isPassedToDisplay
-                  ? 'Has demostrado conocimientos sólidos sobre las Buenas Prácticas de Manufactura en Mi Gusto.'
+                  ? `Has demostrado conocimientos sólidos sobre ${courseData.title} en Mi Gusto.`
                   : 'No has alcanzado la calificación mínima requerida. Te recomendamos revisar el contenido y solicitar a tu supervisor una oportunidad para volver a intentarlo.'
                 }
               </p>
@@ -496,10 +324,10 @@ export function EvaluationSlide() {
             <div className="flex flex-col items-center justify-center bg-surface/50 border border-surface-border/40 rounded-xl px-8 py-4 my-2">
               <p className="text-xs text-text-muted uppercase tracking-wider font-semibold">Tu Calificación</p>
               <h3 className={`text-3xl font-black mt-1 ${isPassedToDisplay ? 'text-brand-400' : 'text-red-400'}`}>
-                {scoreToDisplay} / 15
+                {scoreToDisplay} / {QUESTIONS.length}
               </h3>
               <p className="text-xs text-text-secondary mt-0.5">
-                ({Math.round((scoreToDisplay / QUESTIONS.length) * 100)}% de respuestas correctas)
+                ({QUESTIONS.length > 0 ? Math.round((scoreToDisplay / QUESTIONS.length) * 100) : 0}% de respuestas correctas)
               </p>
             </div>
 
@@ -514,7 +342,12 @@ export function EvaluationSlide() {
                     {showReview ? '🙈 Ocultar Revisión' : '🔍 Revisar Respuestas'}
                   </button>
                   <button
-                    onClick={() => goToLesson('cierre', 'cierre-equipo')}
+                    onClick={() => {
+                      const closeModule = courseData.modules.find(m => m.lessons.some(l => l.id === 'cierre-equipo'))
+                      if (closeModule) {
+                        goToLesson(closeModule.id, 'cierre-equipo')
+                      }
+                    }}
                     className="btn-primary px-8 py-3.5 flex items-center justify-center gap-2 text-sm font-black shadow-glow text-white"
                   >
                     🏁 Ir a la Lección Final
@@ -523,7 +356,7 @@ export function EvaluationSlide() {
               ) : (
                 <button
                   onClick={() => {
-                    const firstMod = COURSE_DATA.modules[0]
+                    const firstMod = courseData.modules[0]
                     const firstLess = firstMod.lessons[0]
                     goToLesson(firstMod.id, firstLess.id)
                   }}

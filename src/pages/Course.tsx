@@ -3,13 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { usePageNavigate } from '../hooks/usePageNavigate'
 import gsap from 'gsap'
 import { useCourse } from '../context/CourseContext'
-import { COURSE_DATA } from '../data/course'
 import { LessonRenderer } from '../components/course/LessonRenderer'
 import { Sidebar } from '../components/layout/Sidebar'
 import { LessonNav, TopBar } from '../components/layout/LessonNav'
 
 export function Course() {
-  const { progress, isEvaluationActive, isLessonCompleted, goToLesson } = useCourse()
+  const { progress, isEvaluationActive, isLessonCompleted, goToLesson, courseData } = useCourse()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const prevKey = useRef('')
@@ -17,7 +16,7 @@ export function Course() {
   const guardNavigate = useNavigate()   // guard redirect
 
   // Resolve current module and lesson
-  const module = COURSE_DATA.modules.find(m => m.id === progress.currentModuleId)
+  const module = courseData.modules.find(m => m.id === progress.currentModuleId)
   const lesson = module?.lessons.find(l => l.id === progress.currentLessonId)
 
   // If no valid state found or accessing final lesson without passing the exam, redirect
@@ -27,9 +26,12 @@ export function Course() {
       return
     }
     if (lesson.id === 'cierre-equipo' && !isLessonCompleted('evaluacion-test')) {
-      goToLesson('cierre', 'evaluacion-test')
+      const evalModule = courseData.modules.find(m => m.lessons.some(l => l.id === 'evaluacion-test'))
+      if (evalModule) {
+        goToLesson(evalModule.id, 'evaluacion-test')
+      }
     }
-  }, [module, lesson, guardNavigate, isLessonCompleted, goToLesson])
+  }, [module, lesson, guardNavigate, isLessonCompleted, goToLesson, courseData])
 
   // Slide transition animation when lesson changes
   const lessonKey = `${progress.currentModuleId}-${progress.currentLessonId}`

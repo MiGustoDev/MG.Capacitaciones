@@ -298,7 +298,7 @@ export function AdminPanel() {
     if (visibleColumns.trabajador) headerParts.push('Trabajador')
     headerParts.push('Capacitación')
     if (visibleColumns.estado) headerParts.push('Estado')
-    if (visibleColumns.nota) headerParts.push('Correctas (de 15)')
+    if (visibleColumns.nota) headerParts.push(`Correctas (de ${activeTab === 'armado' ? 22 : 15})`)
     if (visibleColumns.tiempo) headerParts.push('Tiempo')
     headerParts.push('Fecha Inicio', 'Fecha Fin', 'Ultima Actualizacion')
 
@@ -615,7 +615,7 @@ export function AdminPanel() {
           </div>
           <div className="bg-surface-card border border-surface-border rounded-xl p-4 text-left col-span-2 md:col-span-1">
             <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">Promedio Gral.</span>
-            <h3 className="text-2xl font-black text-brand-400 mt-1">{stats.avgScore} <span className="text-xs text-text-muted">/15</span></h3>
+            <h3 className="text-2xl font-black text-brand-400 mt-1">{stats.avgScore} <span className="text-xs text-text-muted">/{activeTab === 'armado' ? 22 : 15}</span></h3>
           </div>
         </div>
 
@@ -722,7 +722,7 @@ export function AdminPanel() {
                         <td className="px-5 py-4 text-center font-bold">
                           {p.evaluationScore !== undefined ? (
                             <span className={isPassed ? 'text-brand-400' : 'text-red-400'}>
-                              {p.evaluationScore} / 15
+                              {p.evaluationScore} / {p.trainingId === 'armado' ? 22 : 15}
                             </span>
                           ) : (
                             <span className="text-text-muted">-</span>
@@ -809,7 +809,7 @@ export function AdminPanel() {
                         <span className="font-bold text-sm text-white">
                           {p.evaluationScore !== undefined ? (
                             <span className={isPassed ? 'text-brand-400' : 'text-red-400'}>
-                              {p.evaluationScore} / 15
+                              {p.evaluationScore} / {p.trainingId === 'armado' ? 22 : 15}
                             </span>
                           ) : (
                             <span className="text-text-muted">-</span>
@@ -914,7 +914,7 @@ export function AdminPanel() {
                       <tr key={p.userName}>
                         {visibleColumns.trabajador && <td className="px-4 py-3 font-semibold text-white">{p.userName}</td>}
                         {visibleColumns.estado && <td className="px-4 py-3 text-center">{status}</td>}
-                        {visibleColumns.nota && <td className="px-4 py-3 text-center">{p.evaluationScore !== undefined ? `${p.evaluationScore}/15` : '-'}</td>}
+                        {visibleColumns.nota && <td className="px-4 py-3 text-center">{p.evaluationScore !== undefined ? `${p.evaluationScore}/${p.trainingId === 'armado' ? 22 : 15}` : '-'}</td>}
                         {visibleColumns.tiempo && <td className="px-4 py-3 text-center">{formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}</td>}
                       </tr>
                     )
@@ -1079,7 +1079,7 @@ export function AdminPanel() {
                   const isPassed = p.evaluationFailed === false
                   const isFailed = p.evaluationFailed === true
                   const status = isPassed ? 'Aprobado' : isFailed ? 'No Aprobado' : 'En curso'
-                  const score = p.evaluationScore !== undefined ? `${p.evaluationScore} / 15` : '-'
+                  const score = p.evaluationScore !== undefined ? `${p.evaluationScore} / ${p.trainingId === 'armado' ? 22 : 15}` : '-'
                   const time = formatDuration(p.startedAt, p.completedAt, p.lastUpdated)
                   return (
                     <tr key={p.userName}>

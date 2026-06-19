@@ -9,7 +9,6 @@ import { ModuleHero } from '../slides/ModuleHero'
 import { CommitmentSlide, ClosingSlide } from '../slides/ClosingSlides'
 import { EvaluationSlide } from '../slides/EvaluationSlide'
 import { useCourse } from '../../context/CourseContext'
-import { COURSE_DATA } from '../../data/course'
 
 interface LessonRendererProps {
   lesson: Lesson
@@ -77,11 +76,11 @@ export function GlobalProgressBar() {
 
 // ── Indicador de progreso por módulo ─────────────────────────────────────────
 export function ModuleProgressDots() {
-  const { progress, isLessonCompleted } = useCourse()
+  const { progress, isLessonCompleted, courseData } = useCourse()
 
   return (
     <div className="flex flex-col gap-4">
-      {COURSE_DATA.modules.map(mod => {
+      {courseData.modules.map(mod => {
         const completed = mod.lessons.filter(l => isLessonCompleted(l.id)).length
         const total = mod.lessons.length
         const pct = (completed / total) * 100

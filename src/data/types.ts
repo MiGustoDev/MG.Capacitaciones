@@ -80,6 +80,13 @@ export interface Module {
   lessons: Lesson[]
 }
 
+export interface Question {
+  id: number
+  question: string
+  options: string[]
+  correctAnswer: number // 0-indexed (0=A, 1=B, 2=C, 3=D)
+}
+
 /** El curso completo */
 export interface Course {
   id: string
@@ -89,6 +96,8 @@ export interface Course {
   totalModules: number
   objectives: string[]
   modules: Module[]
+  questions: Question[]
+  passScore: number
 }
 
 /** Estado de progreso del usuario */

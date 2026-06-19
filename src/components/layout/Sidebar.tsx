@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { usePageNavigate } from '../../hooks/usePageNavigate'
 import { useCourse } from '../../context/CourseContext'
-import { COURSE_DATA, getFlatLessons } from '../../data/course'
+import { getFlatLessons } from '../../data/course'
 import type { Lesson, Module } from '../../data/types'
 
 interface SidebarProps {
@@ -55,7 +55,7 @@ function LessonItem({
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = usePageNavigate()
-  const { progress, isLessonCompleted, goToLesson } = useCourse()
+  const { progress, isLessonCompleted, goToLesson, courseData } = useCourse()
   const overlayRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLElement>(null)
   // Track whether component has been opened at least once (skip close animation on first render)
@@ -100,13 +100,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   }, [isOpen])
 
-  const flat = getFlatLessons()
+  const flat = getFlatLessons(courseData)
   const requiredLessons = flat.filter(l => l.id !== 'evaluacion-test' && l.id !== 'cierre-equipo')
   const completedRequired = requiredLessons.filter(l => isLessonCompleted(l.id)).length
   const isUnlocked = completedRequired === requiredLessons.length
 
   const handleGoToEvaluation = () => {
-    goToLesson('cierre', 'evaluacion-test')
+    const evalModule = courseData.modules.find(m => m.lessons.some(l => l.id === 'evaluacion-test'))
+    if (evalModule) {
+      goToLesson(evalModule.id, 'evaluacion-test')
+    }
     handleClose()
   }
 
@@ -119,7 +122,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             <span>{getGenderIcon(progress.userName)}</span>
             <span className="truncate">{progress.userName || 'Colaborador'}</span>
           </p>
-          <h2 className="text-sm font-bold text-text-primary mt-0.5 truncate">BPM · Capacitación</h2>
+          <h2 className="text-sm font-bold text-text-primary mt-0.5 truncate">
+            {courseData.id === 'armado' ? 'Armado' : 'BPM'} · Capacitación
+          </h2>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Botón Inicio */}
@@ -147,7 +152,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Module tree */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-5" aria-label="Módulos del curso">
-        {COURSE_DATA.modules.map(mod => {
+        {courseData.modules.map(mod => {
           const completedInModule = mod.lessons.filter(l => isLessonCompleted(l.id)).length
           const isCurrent = mod.id === progress.currentModuleId
 
