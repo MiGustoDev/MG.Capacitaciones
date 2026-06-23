@@ -71,7 +71,7 @@ export function BulletListSlide({ content }: BulletListSlideProps) {
       >
         <div
           ref={headerRef}
-          className={`flex flex-col gap-3 opacity-0 ${stackedMobile ? 'order-1' : ''}`}
+          className={`flex flex-col gap-3 opacity-0 ${stackedMobile ? 'order-1 lg:order-none' : ''}`}
         >
           {content.badge && <BadgePill label={content.badge} />}
           <h2 className="lesson-title">{content.title}</h2>

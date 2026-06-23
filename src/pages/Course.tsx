@@ -73,7 +73,7 @@ export function Course() {
         <div
           ref={contentRef}
           className={`flex-1 overflow-y-auto px-4 py-4 md:px-8 md:py-10 lg:px-12 ${
-            isEvaluationActive ? 'flex items-center justify-center' : ''
+            isEvaluationActive ? 'flex items-start md:items-center justify-center pt-6 md:pt-10' : ''
           }`}
         >
           <div className={isEvaluationActive ? 'w-full max-w-3xl' : 'max-w-6xl mx-auto'}>

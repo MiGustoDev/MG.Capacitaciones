@@ -202,7 +202,7 @@ export function Hub() {
           />
         </div>
         {progress.userName ? (
-          <div className="flex items-center gap-3 bg-brand-600/10 border border-brand-600/20 px-3.5 py-2 rounded-lg">
+          <div className="flex items-center gap-3 bg-white/5 border border-slate-500/20 px-3.5 py-2 rounded-lg">
             <span className="text-xs font-bold text-brand-300">{getGenderIcon(progress.userName)} {progress.userName}</span>
           </div>
         ) : (
@@ -213,7 +213,7 @@ export function Hub() {
       {/* Main Content */}
       <main className="w-full max-w-5xl mx-auto flex-1 flex flex-col justify-center items-center">
         <div className="text-center mb-6 sm:mb-12 hub-header-text opacity-0">
-          <span className="text-brand-400 text-[10px] sm:text-xs font-extrabold uppercase tracking-widest bg-brand-600/10 border border-brand-600/20 px-3 py-1 rounded-full">
+          <span className="text-brand-400 text-[10px] sm:text-xs font-extrabold uppercase tracking-widest bg-white/5 border border-slate-500/20 px-3 py-1 rounded-full">
             Plataforma de Capacitaciones
           </span>
           <h1 className="text-2xl sm:text-fluid-4xl font-black mt-3 sm:mt-4 leading-tight">

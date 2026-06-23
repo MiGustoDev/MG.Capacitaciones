@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { usePageNavigate } from '../hooks/usePageNavigate'
 import { useCourse } from '../context/CourseContext'
+import { COURSES_DATA, getTotalLessons } from '../data/course'
 
 const MODULE_COLORS: Record<string, string> = {
   intro: 'border-brand-600/40 bg-brand-600/10',
@@ -41,7 +42,9 @@ interface LandingProps {
 export function Landing({ trainingId }: LandingProps) {
   const navigate = usePageNavigate() // for user-triggered navigation (with animation)
   const guardNavigate = useNavigate() // for automatic guard redirect (no animation needed)
-  const { progress, courseData, selectTraining, totalLessons } = useCourse()
+  const { progress, selectTraining } = useCourse()
+  const courseData = COURSES_DATA[trainingId] || COURSES_DATA.calidad
+  const totalLessons = getTotalLessons(courseData)
   const ref = useRef<HTMLDivElement>(null)
 
   // Ensure active training matches the route/prop
@@ -73,7 +76,8 @@ export function Landing({ trainingId }: LandingProps) {
     navigate('/curso')
   }
 
-  const hasProgress = progress.completedLessons.length > 0
+  const isLoaded = progress.trainingId === trainingId
+  const hasProgress = isLoaded && progress.completedLessons.length > 0
 
   // Format title with gradient last word
   const formatTitle = (title: string) => {
@@ -94,7 +98,7 @@ export function Landing({ trainingId }: LandingProps) {
     <div ref={ref} className="min-h-dvh bg-gradient-dark flex flex-col">
       {/* Hero */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-16 md:py-24 text-center max-w-5xl mx-auto w-full">
-        <div className="hero-badge opacity-0 inline-flex items-center gap-2 bg-brand-600/20 border border-brand-600/30 rounded-full px-3 sm:px-4 py-1 sm:py-1.5 mb-4 sm:mb-8">
+        <div className="hero-badge opacity-0 inline-flex items-center gap-2 bg-white/5 border border-slate-500/20 rounded-full px-3 sm:px-4 py-1 sm:py-1.5 mb-4 sm:mb-8">
           <span className="text-brand-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
             Mi Gusto · {courseData.subtitle}
           </span>

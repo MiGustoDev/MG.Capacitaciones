@@ -290,13 +290,17 @@ export function EvaluationSlide() {
               <div className="flex flex-col gap-3 mt-2">
                 {QUESTIONS[currentIdx].options.map((option, idx) => {
                   const isSelected = answers[currentIdx] === idx
+                  // Split "A) Rest of text" → prefix "A)" + body
+                  const prefixMatch = option.match(/^([A-D]\))\s*/)
+                  const prefix = prefixMatch ? prefixMatch[1] : ''
+                  const body = prefixMatch ? option.slice(prefixMatch[0].length) : option
                   return (
                     <button
                       key={idx}
                       onClick={() => handleSelectOption(idx)}
-                      className={`w-full text-left p-4 rounded-xl border text-fluid-base transition-all duration-150 flex items-start gap-3
+                      className={`w-full text-left p-4 rounded-xl border text-fluid-base font-normal transition-all duration-150 flex items-start gap-3
                         ${isSelected
-                          ? 'border-brand-500 bg-brand-600/20 text-brand-300 font-semibold shadow-glow'
+                          ? 'border-brand-500 bg-brand-600/20 text-brand-300 shadow-glow'
                           : 'border-surface-border bg-surface-elevated hover:bg-surface-border text-text-primary'
                         }`}
                     >
@@ -304,7 +308,9 @@ export function EvaluationSlide() {
                         ${isSelected ? 'bg-brand-500 border-brand-500 text-white' : 'border-text-muted'}`}>
                         {isSelected && '✓'}
                       </span>
-                      <span className="leading-tight">{option}</span>
+                      <span className="leading-tight">
+                        {prefix && <span className="font-bold">{prefix} </span>}{body}
+                      </span>
                     </button>
                   )
                 })}
