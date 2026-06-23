@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import { useCourse } from '../../context/CourseContext'
 import { useGSAPEntrance } from '../../hooks/useGSAPEntrance'
 import { getFlatLessons } from '../../data/course'
+import { supabase } from '../../utils/supabase'
 
 export function EvaluationSlide() {
   const {
@@ -12,7 +13,8 @@ export function EvaluationSlide() {
     setIsEvaluationActive,
     setEvaluationResult,
     goToLesson,
-    courseData
+    courseData,
+    syncProgressWithDatabase
   } = useCourse()
   
   const QUESTIONS = courseData.questions || []
@@ -31,6 +33,36 @@ export function EvaluationSlide() {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [answers, setAnswers] = useState<Record<number, number>>({})
   const [showReview, setShowReview] = useState(false)
+  const [checkingReset, setCheckingReset] = useState(false)
+  const [resetCheckMessage, setResetCheckMessage] = useState('')
+
+  const handleCheckReset = async () => {
+    if (!progress.userName) return
+    setCheckingReset(true)
+    setResetCheckMessage('')
+    try {
+      const { data, error } = await supabase
+        .from('participants')
+        .select('evaluation_failed')
+        .eq('user_name', progress.userName)
+        .eq('training_id', progress.trainingId || 'calidad')
+        .maybeSingle()
+
+      if (error) throw error
+
+      if (data && data.evaluation_failed === null) {
+        await syncProgressWithDatabase()
+        setResetCheckMessage('¡Habilitación confirmada! Ya podés realizar la evaluación nuevamente.')
+      } else {
+        setResetCheckMessage('La evaluación sigue bloqueada. Solicitá habilitación a tu supervisor.')
+      }
+    } catch (e) {
+      console.error(e)
+      setResetCheckMessage('Error al conectar con el servidor. Reintentá.')
+    } finally {
+      setCheckingReset(false)
+    }
+  }
 
   /** Animate current panel out, swap state, animate new panel in */
   const transitionTo = useCallback(
@@ -354,18 +386,33 @@ export function EvaluationSlide() {
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={() => {
-                    const firstMod = courseData.modules[0]
-                    const firstLess = firstMod.lessons[0]
-                    goToLesson(firstMod.id, firstLess.id)
-                  }}
-                  className="btn-primary px-8 py-3 flex items-center justify-center gap-2 text-sm font-bold"
-                >
-                  📖 Repasar Contenido
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+                  <button
+                    onClick={() => {
+                      const firstMod = courseData.modules[0]
+                      const firstLess = firstMod.lessons[0]
+                      goToLesson(firstMod.id, firstLess.id)
+                    }}
+                    className="btn-secondary px-8 py-3 flex items-center justify-center gap-2 text-sm font-bold w-full sm:w-auto"
+                  >
+                    📖 Repasar Contenido
+                  </button>
+                  <button
+                    onClick={handleCheckReset}
+                    disabled={checkingReset}
+                    className="btn-primary px-8 py-3 flex items-center justify-center gap-2 text-sm font-bold w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {checkingReset ? 'Verificando... 🔄' : '🔄 Verificar Habilitación'}
+                  </button>
+                </div>
               )}
             </div>
+
+            {!isPassedToDisplay && resetCheckMessage && (
+              <p className="text-xs text-amber-400 mt-2 font-medium text-center">
+                {resetCheckMessage}
+              </p>
+            )}
 
             {isPassedToDisplay && (
               <div className="text-xs text-brand-300 bg-brand-500/15 border border-brand-500/30 px-5 py-2.5 rounded-lg max-w-sm mt-3">

@@ -4,8 +4,22 @@
 
 @layer base {
   :root {
-    --color-brand: #2d6a4f;
-    --color-brand-dark: #1a4a38;
+    --brand-50:  #f0fdf4;
+    --brand-100: #dcfce7;
+    --brand-200: #bbf7d0;
+    --brand-300: #86efac;
+    --brand-400: #4ade80;
+    --brand-500: #22c55e;
+    --brand-600: #2d6a4f;
+    --brand-700: #1a4a38;
+    --brand-800: #145030;
+    --brand-900: #0d3320;
+    --brand-950: #052010;
+    --brand-text: #ffffff;
+    --brand-glow: rgba(45, 106, 79, 0.4);
+
+    --color-brand: var(--brand-600);
+    --color-brand-dark: var(--brand-700);
     --color-surface: #0f1923;
     --color-surface-card: #1a2535;
     --color-surface-elevated: #243044;
@@ -68,10 +82,11 @@
   }
 
   .btn-primary {
-    @apply bg-brand-600 hover:bg-brand-700 text-white font-semibold px-6 py-3 rounded-xl
+    @apply bg-brand-600 hover:bg-brand-700 font-semibold px-6 py-3 rounded-xl
            transition-all duration-200 active:scale-95 focus:outline-none
            focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2
            focus-visible:ring-offset-surface disabled:opacity-40 disabled:cursor-not-allowed;
+    color: var(--brand-text, #ffffff) !important;
   }
 
   .btn-secondary {
@@ -121,7 +136,7 @@
     text-wrap: balance;
   }
   .gradient-text {
-    background: linear-gradient(135deg, #4ade80 0%, #2d6a4f 100%);
+    background: linear-gradient(135deg, var(--brand-400) 0%, var(--brand-600) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

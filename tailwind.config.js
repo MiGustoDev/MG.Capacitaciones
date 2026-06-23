@@ -8,17 +8,17 @@ export default {
     extend: {
       colors: {
         brand: {
-          50:  '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#2d6a4f',  // Mi Gusto primary
-          700: '#1a4a38',
-          800: '#145030',
-          900: '#0d3320',
-          950: '#052010',
+          50:  'var(--brand-50)',
+          100: 'var(--brand-100)',
+          200: 'var(--brand-200)',
+          300: 'var(--brand-300)',
+          400: 'var(--brand-400)',
+          500: 'var(--brand-500)',
+          600: 'var(--brand-600)',
+          700: 'var(--brand-700)',
+          800: 'var(--brand-800)',
+          900: 'var(--brand-900)',
+          950: 'var(--brand-950)',
         },
         surface: {
           DEFAULT: '#0f1923',
@@ -57,13 +57,13 @@ export default {
       },
       boxShadow: {
         card: '0 4px 24px rgba(0,0,0,0.3)',
-        glow: '0 0 24px rgba(45, 106, 79, 0.4)',
+        glow: '0 0 24px var(--brand-glow)',
         glowAmber: '0 0 24px rgba(244, 162, 97, 0.3)',
       },
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(135deg, #2d6a4f 0%, #1a4a38 100%)',
+        'gradient-brand': 'linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%)',
         'gradient-dark': 'linear-gradient(135deg, #0f1923 0%, #1a2535 100%)',
-        'gradient-hero': 'linear-gradient(135deg, #0d3320 0%, #1a4a38 50%, #0f1923 100%)',
+        'gradient-hero': 'linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 50%, #0f1923 100%)',
       },
       borderRadius: {
         xl: '1rem',

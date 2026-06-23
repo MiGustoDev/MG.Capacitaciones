@@ -846,76 +846,77 @@ export function AdminPanel() {
 
       {/* Export Preview Modal */}
       {isExportPreviewOpen && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-card border border-surface-border rounded-2xl w-full max-w-2xl p-6 shadow-glow relative animate-scale-in flex flex-col max-h-[85vh]">
-            <h3 className="text-lg font-black text-white mb-2">Vista Previa del Reporte</h3>
-            <p className="text-xs text-text-muted mb-4">
-              Módulo seleccionado: <strong className="text-brand-400">{TRAININGS.find(t => t.id === activeTab)?.title || activeTab}</strong>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-gray-200 rounded-3xl w-full max-w-2xl p-6 sm:p-8 shadow-2xl relative animate-scale-in flex flex-col max-h-[85vh]">
+            <h3 className="text-xl font-bold text-gray-400 mb-1">Vista Previa del Reporte</h3>
+            <p className="text-xs text-gray-700 mb-4">
+              Módulo seleccionado: <strong className="text-brand-600 font-extrabold">{TRAININGS.find(t => t.id === activeTab)?.title || activeTab}</strong>
             </p>
 
             {/* Column Toggles */}
-            <div className="flex flex-wrap gap-4 items-center mb-4 bg-surface/50 p-3 rounded-xl border border-surface-border/50 text-xs">
-              <span className="text-text-muted font-bold">Columnas:</span>
-              <label className="flex items-center gap-1.5 cursor-pointer text-white">
+            <div className="flex flex-wrap gap-4 items-center mb-6 bg-white py-2.5 px-4 rounded-full border border-gray-200 text-xs">
+              <span className="text-gray-800 font-bold mr-1">Columnas:</span>
+              <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
                 <input
                   type="checkbox"
                   checked={visibleColumns.trabajador}
                   onChange={(e) => setVisibleColumns(prev => ({ ...prev, trabajador: e.target.checked }))}
-                  className="rounded border-surface-border text-brand-500 focus:ring-0 focus:ring-offset-0 bg-surface"
+                  className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
                 />
                 Trabajador
               </label>
-              <label className="flex items-center gap-1.5 cursor-pointer text-white">
+              <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
                 <input
                   type="checkbox"
                   checked={visibleColumns.estado}
                   onChange={(e) => setVisibleColumns(prev => ({ ...prev, estado: e.target.checked }))}
-                  className="rounded border-surface-border text-brand-500 focus:ring-0 focus:ring-offset-0 bg-surface"
+                  className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
                 />
                 Estado
               </label>
-              <label className="flex items-center gap-1.5 cursor-pointer text-white">
+              <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
                 <input
                   type="checkbox"
                   checked={visibleColumns.nota}
                   onChange={(e) => setVisibleColumns(prev => ({ ...prev, nota: e.target.checked }))}
-                  className="rounded border-surface-border text-brand-500 focus:ring-0 focus:ring-offset-0 bg-surface"
+                  className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
                 />
                 Nota
               </label>
-              <label className="flex items-center gap-1.5 cursor-pointer text-white">
+              <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
                 <input
                   type="checkbox"
                   checked={visibleColumns.tiempo}
                   onChange={(e) => setVisibleColumns(prev => ({ ...prev, tiempo: e.target.checked }))}
-                  className="rounded border-surface-border text-brand-500 focus:ring-0 focus:ring-offset-0 bg-surface"
+                  className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
                 />
                 Tiempo
               </label>
             </div>
 
             {/* Table Preview */}
-            <div className="flex-1 overflow-y-auto border border-surface-border/50 rounded-xl bg-surface mb-6 scrollbar-thin">
+            <div className="flex-1 overflow-y-auto border border-gray-200 rounded-2xl bg-white mb-6 scrollbar-thin">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-surface-elevated/40 border-b border-surface-border text-text-muted uppercase font-bold">
-                    {visibleColumns.trabajador && <th className="px-4 py-3">Trabajador</th>}
-                    {visibleColumns.estado && <th className="px-4 py-3 text-center">Estado</th>}
-                    {visibleColumns.nota && <th className="px-4 py-3 text-center">Nota</th>}
-                    {visibleColumns.tiempo && <th className="px-4 py-3 text-center">Tiempo</th>}
+                  <tr className="border-b border-gray-200 text-gray-700 uppercase font-bold bg-slate-50">
+                    {visibleColumns.trabajador && <th className="px-5 py-4 text-left font-bold tracking-wider">TRABAJADOR</th>}
+                    {visibleColumns.estado && <th className="px-5 py-4 text-center font-bold tracking-wider">ESTADO</th>}
+                    {visibleColumns.nota && <th className="px-5 py-4 text-center font-bold tracking-wider">NOTA</th>}
+                    {visibleColumns.tiempo && <th className="px-5 py-4 text-center font-bold tracking-wider">TIEMPO</th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-surface-border/30 text-text-secondary">
+                <tbody className="divide-y divide-gray-100 text-gray-700">
                   {activeParticipants.map((p) => {
                     const isPassed = p.evaluationFailed === false
                     const isFailed = p.evaluationFailed === true
                     const status = isPassed ? 'Aprobado' : isFailed ? 'No Aprobado' : 'En curso'
+                    const score = p.evaluationScore !== undefined ? `${p.evaluationScore}/${p.trainingId === 'armado' ? 22 : 15}` : '-'
                     return (
-                      <tr key={p.userName}>
-                        {visibleColumns.trabajador && <td className="px-4 py-3 font-semibold text-white">{p.userName}</td>}
-                        {visibleColumns.estado && <td className="px-4 py-3 text-center">{status}</td>}
-                        {visibleColumns.nota && <td className="px-4 py-3 text-center">{p.evaluationScore !== undefined ? `${p.evaluationScore}/${p.trainingId === 'armado' ? 22 : 15}` : '-'}</td>}
-                        {visibleColumns.tiempo && <td className="px-4 py-3 text-center">{formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}</td>}
+                      <tr key={p.userName} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                        {visibleColumns.trabajador && <td className="px-5 py-4 text-left font-normal text-gray-400">{p.userName}</td>}
+                        {visibleColumns.estado && <td className="px-5 py-4 text-center font-medium">{status}</td>}
+                        {visibleColumns.nota && <td className="px-5 py-4 text-center font-medium">{score}</td>}
+                        {visibleColumns.tiempo && <td className="px-5 py-4 text-center font-medium">{formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}</td>}
                       </tr>
                     )
                   })}
@@ -924,20 +925,20 @@ export function AdminPanel() {
             </div>
 
             {/* Modal Actions */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => setIsExportPreviewOpen(false)}
-                className="order-last sm:order-first flex-1 bg-surface border border-surface-border hover:bg-surface-elevated text-text-secondary hover:text-white py-3 rounded-xl text-xs font-bold transition-all"
+                className="order-last sm:order-first flex-1 bg-white border border-slate-700 hover:bg-slate-50 text-slate-700 py-3 rounded-full text-xs font-bold transition-all text-center"
               >
                 Cerrar
               </button>
-              <div className="flex-1 flex gap-2">
+              <div className="flex-1 flex gap-3">
                 <button
                   onClick={() => {
                     handleExportCSV();
                     setIsExportPreviewOpen(false);
                   }}
-                  className="flex-1 bg-brand-600/20 hover:bg-brand-600/30 text-brand-300 border border-brand-500/30 py-3 rounded-xl text-xs font-bold transition-all"
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-white hover:bg-green-50/50 text-green-700 border border-green-200 hover:border-green-300 py-3 rounded-full text-xs font-bold transition-all"
                 >
                   📄 CSV
                 </button>
@@ -946,7 +947,7 @@ export function AdminPanel() {
                     handleDownloadPDF();
                     setIsExportPreviewOpen(false);
                   }}
-                  className="flex-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 py-3 rounded-xl text-xs font-bold transition-all"
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-white hover:bg-blue-50/50 text-blue-700 border border-blue-200 hover:border-blue-300 py-3 rounded-full text-xs font-bold transition-all"
                 >
                   📕 PDF
                 </button>
@@ -955,7 +956,7 @@ export function AdminPanel() {
                     handlePrint();
                     setIsExportPreviewOpen(false);
                   }}
-                  className="flex-1 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 py-3 rounded-xl text-xs font-bold transition-all"
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-white hover:bg-amber-50/50 text-amber-700 border border-amber-200 hover:border-amber-300 py-3 rounded-full text-xs font-bold transition-all"
                 >
                   🖨️ Imprimir
                 </button>

@@ -25,13 +25,13 @@ export function Course() {
       guardNavigate('/')
       return
     }
-    if (lesson.id === 'cierre-equipo' && !isLessonCompleted('evaluacion-test')) {
+    if (lesson.id === 'cierre-equipo' && !isLessonCompleted('evaluacion-test') && progress.evaluationFailed !== false) {
       const evalModule = courseData.modules.find(m => m.lessons.some(l => l.id === 'evaluacion-test'))
       if (evalModule) {
         goToLesson(evalModule.id, 'evaluacion-test')
       }
     }
-  }, [module, lesson, guardNavigate, isLessonCompleted, goToLesson, courseData])
+  }, [module, lesson, guardNavigate, isLessonCompleted, goToLesson, courseData, progress.evaluationFailed])
 
   // Slide transition animation when lesson changes
   const lessonKey = `${progress.currentModuleId}-${progress.currentLessonId}`

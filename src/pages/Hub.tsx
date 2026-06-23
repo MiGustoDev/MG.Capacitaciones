@@ -7,6 +7,70 @@ import { getAssetUrl } from '../utils/assets'
 import { TRAININGS, type Training } from '../data/trainings'
 import { COURSES_DATA, getTotalLessons } from '../data/course'
 
+const getColorClasses = (color: 'white' | 'red' | 'green' | 'yellow' | 'black' | 'blue', active: boolean) => {
+  if (!active) {
+    return {
+      cardClass: 'bg-surface/30 border-surface-border/40 opacity-50 cursor-not-allowed',
+      glowClass: '',
+      circleStroke: 'stroke-surface-border/30',
+      tagClass: 'text-text-muted bg-surface/30 border-surface-border/25',
+      titleHoverClass: 'group-hover:text-text-primary'
+    }
+  }
+
+  switch (color) {
+    case 'white':
+      return {
+        cardClass: 'bg-surface-card hover:bg-surface-elevated border-slate-200/20 hover:border-white hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] cursor-pointer hover:-translate-y-1',
+        glowClass: 'from-white/5',
+        circleStroke: 'stroke-white',
+        tagClass: 'text-white bg-white/10 border-white/20',
+        titleHoverClass: 'group-hover:text-white'
+      }
+    case 'red':
+      return {
+        cardClass: 'bg-surface-card hover:bg-surface-elevated border-red-500/20 hover:border-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] cursor-pointer hover:-translate-y-1',
+        glowClass: 'from-red-500/5',
+        circleStroke: 'stroke-red-500',
+        tagClass: 'text-red-300 bg-red-500/10 border-red-500/20',
+        titleHoverClass: 'group-hover:text-red-400'
+      }
+    case 'green':
+      return {
+        cardClass: 'bg-surface-card hover:bg-surface-elevated border-emerald-500/20 hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] cursor-pointer hover:-translate-y-1',
+        glowClass: 'from-emerald-500/5',
+        circleStroke: 'stroke-emerald-500',
+        tagClass: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20',
+        titleHoverClass: 'group-hover:text-emerald-400'
+      }
+    case 'yellow':
+      return {
+        cardClass: 'bg-surface-card hover:bg-surface-elevated border-amber-500/20 hover:border-amber-500 hover:shadow-[0_0_15px_rgba(245,158,11,0.2)] cursor-pointer hover:-translate-y-1',
+        glowClass: 'from-amber-500/5',
+        circleStroke: 'stroke-amber-500',
+        tagClass: 'text-amber-300 bg-amber-500/10 border-amber-500/20',
+        titleHoverClass: 'group-hover:text-amber-400'
+      }
+    case 'black':
+      return {
+        cardClass: 'bg-surface-card hover:bg-surface-elevated border-slate-800 hover:border-slate-400 hover:shadow-[0_0_15px_rgba(148,163,184,0.1)] cursor-pointer hover:-translate-y-1',
+        glowClass: 'from-slate-600/5',
+        circleStroke: 'stroke-slate-400',
+        tagClass: 'text-slate-300 bg-slate-800/40 border-slate-700',
+        titleHoverClass: 'group-hover:text-slate-200'
+      }
+    case 'blue':
+    default:
+      return {
+        cardClass: 'bg-surface-card hover:bg-surface-elevated border-blue-500/20 hover:border-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] cursor-pointer hover:-translate-y-1',
+        glowClass: 'from-blue-500/5',
+        circleStroke: 'stroke-blue-500',
+        tagClass: 'text-blue-300 bg-blue-500/10 border-blue-500/20',
+        titleHoverClass: 'group-hover:text-blue-400'
+      }
+  }
+}
+
 export function Hub() {
   const navigate = usePageNavigate()
   const { progress, setUserName, logout } = useCourse()
@@ -14,6 +78,7 @@ export function Hub() {
   const [inputName, setInputName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const modalOverlayRef = useRef<HTMLDivElement>(null)
   const modalCardRef = useRef<HTMLDivElement>(null)
@@ -81,7 +146,7 @@ export function Hub() {
     }
   }
 
-  const handleSubmitName = (e: React.FormEvent) => {
+  const handleSubmitName = async (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = inputName.trim()
     if (!trimmed) {
@@ -92,10 +157,23 @@ export function Hub() {
       setErrorMsg('Ingresá tu nombre completo (mínimo 4 caracteres).')
       return
     }
-    setUserName(trimmed, selectedModuleId || 'calidad')
-    setShowModal(false)
-    const targetPath = selectedModuleId === 'calidad' ? '/calidad' : `/${selectedModuleId || 'calidad'}`
-    navigate(targetPath)
+    setSubmitting(true)
+    setErrorMsg('')
+    try {
+      await setUserName(trimmed, selectedModuleId || 'calidad')
+      setShowModal(false)
+      const targetPath = selectedModuleId === 'calidad' ? '/calidad' : `/${selectedModuleId || 'calidad'}`
+      navigate(targetPath)
+    } catch (err: any) {
+      console.error(err)
+      if (err.message === 'ALREADY_REGISTERED') {
+        setErrorMsg('Trabajador ya registrado previamente, contacte el supervisor para solicitar una revision')
+      } else {
+        setErrorMsg('Ocurrió un error al verificar tu estado. Reintentá.')
+      }
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const getTrainingProgressPercent = (trainingId: string) => {
@@ -126,12 +204,6 @@ export function Hub() {
         {progress.userName ? (
           <div className="flex items-center gap-3 bg-brand-600/10 border border-brand-600/20 px-3.5 py-2 rounded-lg">
             <span className="text-xs font-bold text-brand-300">{getGenderIcon(progress.userName)} {progress.userName}</span>
-            <button
-              onClick={logout}
-              className="text-[10px] uppercase font-black text-red-400 hover:text-red-300 transition-colors border-l border-brand-600/20 pl-3"
-            >
-              Salir
-            </button>
           </div>
         ) : (
           <div />
@@ -156,20 +228,17 @@ export function Hub() {
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 w-full max-w-5xl">
           {TRAININGS.map((mod) => {
             const percent = getTrainingProgressPercent(mod.id)
+            const { cardClass, glowClass, circleStroke, tagClass, titleHoverClass } = getColorClasses(mod.themeColor, mod.active)
             return (
               <button
                 key={mod.id}
                 onClick={() => handleModuleClick(mod)}
                 disabled={!mod.active}
-                className={`hub-card opacity-0 text-left rounded-2xl border p-3.5 sm:p-6 flex flex-col justify-between h-40 sm:h-56 transition-all duration-300 relative group overflow-hidden ${
-                  mod.active
-                    ? 'bg-surface-card hover:bg-surface-elevated border-brand-600/40 hover:border-brand-500 hover:shadow-glow cursor-pointer hover:-translate-y-1'
-                    : 'bg-surface/30 border-surface-border/40 opacity-50 cursor-not-allowed'
-                }`}
+                className={`hub-card opacity-0 text-left rounded-2xl border p-3.5 sm:p-6 flex flex-col justify-between h-40 sm:h-56 transition-all duration-300 relative group overflow-hidden ${cardClass}`}
               >
                 {/* Card glowing backdrop for active card */}
                 {mod.active && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-brand-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${glowClass} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                 )}
 
                 <div className="flex justify-between items-start w-full relative z-10">
@@ -192,7 +261,7 @@ export function Hub() {
                           cx="24"
                           cy="24"
                           r="19"
-                          className="stroke-brand-500 fill-none transition-all duration-700 ease-out"
+                          className={`${circleStroke} fill-none transition-all duration-700 ease-out`}
                           strokeWidth="3.5"
                           strokeDasharray={2 * Math.PI * 19}
                           strokeDashoffset={2 * Math.PI * 19 * (1 - percent / 100)}
@@ -204,20 +273,14 @@ export function Hub() {
                       </span>
                     </div>
                   ) : (
-                    <span
-                      className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border ${
-                        mod.active
-                          ? 'text-brand-300 bg-brand-500/10 border-brand-500/20'
-                          : 'text-text-muted bg-surface/30 border-surface-border/25'
-                      }`}
-                    >
+                    <span className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border ${tagClass}`}>
                       {mod.active ? mod.tagline : 'Próx.'}
                     </span>
                   )}
                 </div>
 
                 <div className="mt-2 sm:mt-4 relative z-10">
-                  <h3 className="text-xs sm:text-fluid-lg font-bold text-text-primary group-hover:text-brand-400 transition-colors leading-tight">
+                  <h3 className={`text-xs sm:text-fluid-lg font-bold text-text-primary ${titleHoverClass} transition-colors leading-tight`}>
                     {mod.title}
                   </h3>
                   <p className="text-[10px] sm:text-xs text-text-secondary mt-1 sm:mt-1.5 leading-relaxed line-clamp-2">
@@ -239,7 +302,7 @@ export function Hub() {
 
       {/* Footer */}
       <footer className="w-full text-center mt-12 py-4 border-t border-surface-border/30 max-w-6xl mx-auto">
-        <p className="text-xs text-text-muted">Desarrollado por el Departamento de sistemas de Mi Gusto 🥟</p>
+        <p className="text-xs text-text-muted">Desarrollado por el Departamento de sistemas de Mi Gusto</p>
       </footer>
 
       {/* Name Input Modal */}
@@ -285,9 +348,10 @@ export function Hub() {
               <div className="flex justify-center mt-2">
                 <button
                   type="submit"
-                  className="btn-primary px-8 py-3.5 text-sm font-bold shadow-glow flex items-center gap-2"
+                  disabled={submitting}
+                  className="btn-primary px-8 py-3.5 text-sm font-bold shadow-glow flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Comenzar Capacitación 🚀
+                  {submitting ? 'Verificando datos... 🔄' : 'Comenzar Capacitación 🚀'}
                 </button>
               </div>
             </form>

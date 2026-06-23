@@ -9,14 +9,16 @@ interface LessonNavProps {
 }
 
 export function LessonNav({ currentModuleId, currentLessonId }: LessonNavProps) {
-  const { goToLesson, markCurrentComplete, isLessonCompleted, courseData } = useCourse()
+  const { goToLesson, markCurrentComplete, isLessonCompleted, courseData, progress } = useCourse()
   const prev = getPrevLesson(courseData, currentModuleId, currentLessonId)
   const next = getNextLesson(courseData, currentModuleId, currentLessonId)
 
   const module = courseData.modules.find(m => m.id === currentModuleId)
   const lesson = module?.lessons.find(l => l.id === currentLessonId)
   const isEvaluation = lesson?.type === 'evaluation'
-  const isCompleted = lesson ? isLessonCompleted(lesson.id) : false
+  const isCompleted = lesson 
+    ? (isLessonCompleted(lesson.id) || (lesson.id === 'evaluacion-test' && progress.evaluationFailed === false))
+    : false
 
   const handleNext = () => {
     markCurrentComplete()

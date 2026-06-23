@@ -169,7 +169,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               {/* Lessons */}
               <div className="flex flex-col gap-1">
                 {mod.lessons.map(lesson => {
-                  const isLocked = lesson.id === 'cierre-equipo' && !isLessonCompleted('evaluacion-test')
+                  const isLocked = lesson.id === 'cierre-equipo' && !isLessonCompleted('evaluacion-test') && progress.evaluationFailed !== false
                   
                   return (
                     <LessonItem

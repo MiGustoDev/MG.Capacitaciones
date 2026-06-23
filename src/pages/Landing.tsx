@@ -169,7 +169,7 @@ export function Landing({ trainingId }: LandingProps) {
 
       {/* Footer */}
       <footer className="border-t border-surface-border py-5 text-center">
-        <p className="text-xs text-text-muted">Desarrollado por el Departamento de sistemas de Mi Gusto 🥟</p>
+        <p className="text-xs text-text-muted">Desarrollado por el Departamento de sistemas de Mi Gusto</p>
       </footer>
     </div>
   )
