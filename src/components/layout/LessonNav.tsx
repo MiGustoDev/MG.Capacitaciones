@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useCourse } from '../../context/CourseContext'
 import { getNextLesson, getPrevLesson } from '../../data/course'
 import { GlobalProgressBar } from '../course/LessonRenderer'
@@ -20,6 +21,24 @@ export function LessonNav({ currentModuleId, currentLessonId }: LessonNavProps) 
     ? (isLessonCompleted(lesson.id) || (lesson.id === 'evaluacion-test' && progress.evaluationFailed === false))
     : false
 
+  const [timeLeft, setTimeLeft] = useState(0)
+
+  useEffect(() => {
+    if (lesson && !isCompleted && lesson.type !== 'evaluation') {
+      setTimeLeft(5) // 5 seconds reading delay
+    } else {
+      setTimeLeft(0)
+    }
+  }, [currentLessonId, isCompleted, lesson])
+
+  useEffect(() => {
+    if (timeLeft <= 0) return
+    const timer = setTimeout(() => {
+      setTimeLeft(prev => prev - 1)
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [timeLeft])
+
   const handleNext = () => {
     markCurrentComplete()
     if (next) goToLesson(next.moduleId, next.id)
@@ -28,6 +47,8 @@ export function LessonNav({ currentModuleId, currentLessonId }: LessonNavProps) 
   const handlePrev = () => {
     if (prev) goToLesson(prev.moduleId, prev.id)
   }
+
+  const isNavDisabled = !next || (isEvaluation && !isCompleted) || timeLeft > 0
 
   return (
     <div className="flex items-center gap-4 py-4 px-4 md:px-6 border-t border-surface-border bg-surface-card/80 backdrop-blur-sm">
@@ -47,14 +68,20 @@ export function LessonNav({ currentModuleId, currentLessonId }: LessonNavProps) 
 
       <button
         onClick={handleNext}
-        disabled={!next || (isEvaluation && !isCompleted)}
-        className="btn-primary flex items-center gap-2 text-sm"
+        disabled={isNavDisabled}
+        className="btn-primary flex items-center gap-2 text-sm min-w-[100px] justify-center"
         aria-label={next ? 'Siguiente lección' : 'Fin del curso'}
       >
-        <span className="hidden sm:inline">
-          {isEvaluation && !isCompleted ? 'Aprobar para continuar' : next ? 'Siguiente' : '¡Finalizar!'}
+        <span>
+          {timeLeft > 0 
+            ? `Leer (${timeLeft}s)` 
+            : isEvaluation && !isCompleted 
+              ? 'Aprobar para continuar' 
+              : next 
+                ? 'Siguiente' 
+                : '¡Finalizar!'}
         </span>
-        <span aria-hidden="true">{next ? '→' : '🏆'}</span>
+        {timeLeft === 0 && <span aria-hidden="true">{next ? '→' : '🏆'}</span>}
       </button>
     </div>
   )

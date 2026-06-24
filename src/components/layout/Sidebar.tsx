@@ -169,7 +169,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               {/* Lessons */}
               <div className="flex flex-col gap-1">
                 {mod.lessons.map(lesson => {
-                  const isLocked = lesson.id === 'cierre-equipo' && !isLessonCompleted('evaluacion-test') && progress.evaluationFailed !== false
+                  const flat = getFlatLessons(courseData)
+                  const idx = flat.findIndex(l => l.id === lesson.id)
+                  let isLocked = false
+                  if (idx > 0) {
+                    const prevLesson = flat[idx - 1]
+                    isLocked = !isLessonCompleted(prevLesson.id)
+                  }
+                  
+                  // Special additional lock for cierre-equipo
+                  if (lesson.id === 'cierre-equipo' && !isLocked) {
+                    isLocked = !isLessonCompleted('evaluacion-test') && progress.evaluationFailed !== false
+                  }
                   
                   return (
                     <LessonItem

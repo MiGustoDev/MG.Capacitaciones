@@ -163,11 +163,9 @@ export function CourseProvider({ children }: { children: ReactNode }) {
       const saved = localStorage.getItem(`bpm-mi-gusto-progress_${tId}`)
       if (saved) {
         const parsed = JSON.parse(saved)
-        // Ensure username is synced with global username
-        if (globalUser && parsed.userName !== globalUser) {
-          parsed.userName = globalUser
+        if (parsed.userName === globalUser) {
+          return parsed
         }
-        return parsed
       }
       return defaultProgressFor(tId, globalUser)
     } catch {
@@ -386,10 +384,12 @@ export function CourseProvider({ children }: { children: ReactNode }) {
       const saved = localStorage.getItem(`bpm-mi-gusto-progress_${tId}`)
       if (saved) {
         const parsed = JSON.parse(saved)
-        return {
-          ...parsed,
-          userName: name,
-          trainingId: tId,
+        if (parsed.userName === name) {
+          return {
+            ...parsed,
+            userName: name,
+            trainingId: tId,
+          }
         }
       }
       return {
@@ -415,10 +415,9 @@ export function CourseProvider({ children }: { children: ReactNode }) {
       const saved = localStorage.getItem(`bpm-mi-gusto-progress_${trainingId}`)
       if (saved) {
         const parsed = JSON.parse(saved)
-        if (globalUser && parsed.userName !== globalUser) {
-          parsed.userName = globalUser
+        if (parsed.userName === globalUser) {
+          return parsed
         }
-        return parsed
       }
       return defaultProgressFor(trainingId, globalUser)
     })

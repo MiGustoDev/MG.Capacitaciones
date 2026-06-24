@@ -5,6 +5,32 @@ import { useGSAPEntrance } from '../../hooks/useGSAPEntrance'
 import { getFlatLessons } from '../../data/course'
 import { supabase } from '../../utils/supabase'
 
+function shuffleArray<T>(array: T[]): T[] {
+  const arr = [...array]
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
+}
+
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
+
+function stripPrefix(text: string): string {
+  return text.replace(/^([A-D]\))\s*/, '')
+}
+
+interface ShuffledQuestion {
+  id: number
+  question: string
+  options: string[]
+  correctAnswerIdx: number
+}
+
 export function EvaluationSlide() {
   const {
     progress,
@@ -20,6 +46,10 @@ export function EvaluationSlide() {
   const QUESTIONS = courseData.questions || []
   const passScore = courseData.passScore || 12
   const containerRef = useGSAPEntrance({ y: 20, duration: 0.5 })
+
+  const [shuffledQuestions, setShuffledQuestions] = useState<ShuffledQuestion[]>([])
+  const [examEndTime, setExamEndTime] = useState<number | null>(null)
+  const [examTimeLeft, setExamTimeLeft] = useState<number>(1200)
 
   const flat = getFlatLessons(courseData)
   const requiredLessons = flat.filter(l => l.id !== 'evaluacion-test' && l.id !== 'cierre-equipo')
@@ -93,7 +123,9 @@ export function EvaluationSlide() {
   )
 
   // Calificación
-  const correctCount = QUESTIONS.filter((q, index) => answers[index] === q.correctAnswer).length
+  const correctCount = shuffledQuestions.length > 0
+    ? shuffledQuestions.filter((q, index) => answers[index] === q.correctAnswerIdx).length
+    : 0
   const passed = correctCount >= passScore
 
   const alreadyFailed = progress.evaluationFailed === true
@@ -127,7 +159,98 @@ export function EvaluationSlide() {
     }
   }, [quizState, passed, correctCount, markCurrentComplete, setEvaluationResult, alreadyFailed])
 
+  // Load saved exam state on mount/training change
+  useEffect(() => {
+    if (!progress.trainingId || !progress.userName) return
+    const saved = localStorage.getItem(`bpm-mi-gusto-exam-state_${progress.trainingId}`)
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (parsed.userName === progress.userName && parsed.shuffledQuestions?.length > 0) {
+          setShuffledQuestions(parsed.shuffledQuestions)
+          setAnswers(parsed.answers || {})
+          setCurrentIdx(parsed.currentIdx || 0)
+          
+          let endTime = parsed.examEndTime
+          if (typeof endTime === 'string') {
+            endTime = parseInt(endTime, 10)
+          }
+          // Migration fallback: if we have old state format with remaining seconds
+          if (!endTime && parsed.examTimeLeft !== undefined) {
+            endTime = Date.now() + parsed.examTimeLeft * 1000
+          }
+          setExamEndTime(endTime || null)
+          
+          setIsEvaluationActive(parsed.isEvaluationActive ?? false)
+          setQuizState('quiz')
+        }
+      } catch (e) {
+        console.error('Error loading exam state:', e)
+      }
+    }
+  }, [progress.trainingId, progress.userName, setIsEvaluationActive])
+
+  // Save exam state on changes
+  useEffect(() => {
+    if (quizState === 'quiz' && progress.trainingId && progress.userName && shuffledQuestions.length > 0 && examEndTime) {
+      const state = {
+        userName: progress.userName,
+        shuffledQuestions,
+        answers,
+        currentIdx,
+        examEndTime,
+        isEvaluationActive: true
+      }
+      localStorage.setItem(`bpm-mi-gusto-exam-state_${progress.trainingId}`, JSON.stringify(state))
+    }
+  }, [quizState, progress.trainingId, progress.userName, shuffledQuestions, answers, currentIdx, examEndTime])
+
+  // Remove saved exam state when results screen is shown
+  useEffect(() => {
+    if (quizState === 'results' && progress.trainingId) {
+      localStorage.removeItem(`bpm-mi-gusto-exam-state_${progress.trainingId}`)
+    }
+  }, [quizState, progress.trainingId])
+
+  // Exam countdown timer effect (real-time timestamp based)
+  useEffect(() => {
+    if (quizState !== 'quiz' || !examEndTime) return
+
+    const updateTimer = () => {
+      const now = Date.now()
+      const remaining = Math.max(0, Math.ceil((examEndTime - now) / 1000))
+      setExamTimeLeft(remaining)
+
+      if (remaining <= 0) {
+        transitionTo('results', () => {
+          setIsEvaluationActive(false)
+        })
+      }
+    }
+
+    updateTimer()
+    const timer = setInterval(updateTimer, 1000)
+    return () => clearInterval(timer)
+  }, [quizState, examEndTime, transitionTo, setIsEvaluationActive])
+
   const handleStart = () => {
+    const rawQuestions = courseData.questions || []
+    const shuffled = shuffleArray(rawQuestions).map(q => {
+      const optionsWithIndices = q.options.map((opt, idx) => ({ opt, idx }))
+      const shuffledOpts = shuffleArray(optionsWithIndices)
+      const newCorrectIdx = shuffledOpts.findIndex(item => item.idx === q.correctAnswer)
+      return {
+        id: q.id,
+        question: q.question,
+        options: shuffledOpts.map(item => item.opt),
+        correctAnswerIdx: newCorrectIdx
+      }
+    })
+    setShuffledQuestions(shuffled)
+    const endTime = Date.now() + 20 * 60 * 1000
+    setExamEndTime(endTime)
+    setExamTimeLeft(1200)
+
     transitionTo('quiz', () => {
       setAnswers({})
       setCurrentIdx(0)
@@ -169,7 +292,7 @@ export function EvaluationSlide() {
   }
 
   const handleNextQuestion = () => {
-    if (currentIdx < QUESTIONS.length - 1) {
+    if (currentIdx < shuffledQuestions.length - 1) {
       animateQuestion(currentIdx + 1)
     } else {
       transitionTo('results', () => {
@@ -212,15 +335,15 @@ export function EvaluationSlide() {
               <span className="text-brand-400 font-bold">mínimo {passScore} correctas</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-text-muted">Tiempo estimado:</span>
-              <span className="text-text-primary font-bold">10 - 15 minutos</span>
+              <span className="text-text-muted">Tiempo límite:</span>
+              <span className="text-brand-400 font-bold">20 minutos (máximo)</span>
             </div>
           </div>
 
           <div className="w-full max-w-md bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs px-4 py-3 rounded-xl flex items-start gap-2.5 text-left leading-relaxed">
             <span className="text-lg">⚠️</span>
             <span>
-              <strong>Aviso importante:</strong> Una vez iniciada la evaluación, <strong>no podrás salir de ella, cerrar el menú ni navegar por otros contenidos</strong> hasta que la completes de corrido.
+              <strong>Aviso importante:</strong> Una vez iniciada la evaluación, <strong>no podrás salir de ella, cerrar el menú ni navegar por otros contenidos</strong> hasta que la completes de corrido. Tendrás un máximo de <strong>20 minutos</strong>; de lo contrario, se entregará de forma automática.
             </span>
           </div>
 
@@ -247,12 +370,32 @@ export function EvaluationSlide() {
               </div>
             </div>
           ) : (
-            <button
-              onClick={handleStart}
-              className="btn-primary px-8 py-3.5 shadow-glow mt-2 flex items-center gap-2"
-            >
-              🚀 Comenzar Evaluación
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full justify-center">
+              {(() => {
+                const evalIdx = flat.findIndex(l => l.id === 'evaluacion-test')
+                const prevLesson = evalIdx > 0 ? flat[evalIdx - 1] : null
+                if (!prevLesson) return null
+                return (
+                  <button
+                    onClick={() => {
+                      if (progress.trainingId) {
+                        localStorage.removeItem(`bpm-mi-gusto-exam-state_${progress.trainingId}`)
+                      }
+                      goToLesson(prevLesson.moduleId, prevLesson.id)
+                    }}
+                    className="btn-secondary px-8 py-3.5 text-sm font-bold w-full sm:w-auto"
+                  >
+                    📖 Repasar Lecciones
+                  </button>
+                )
+              })()}
+              <button
+                onClick={handleStart}
+                className="btn-primary px-8 py-3.5 shadow-glow flex items-center justify-center gap-2 w-full sm:w-auto text-white font-bold"
+              >
+                🚀 Comenzar Evaluación
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -267,33 +410,43 @@ export function EvaluationSlide() {
                 Evaluación {courseData.title}
               </span>
               <h2 className="text-sm text-text-muted mt-0.5">
-                Pregunta {currentIdx + 1} de {QUESTIONS.length}
+                Pregunta {currentIdx + 1} de {shuffledQuestions.length}
               </h2>
             </div>
-            {/* Progreso visual */}
-            <div className="w-24 h-2 bg-surface-elevated rounded-full overflow-hidden">
-              <div
-                className="h-full bg-brand-600 rounded-full transition-all duration-300"
-                style={{ width: `${((currentIdx + 1) / QUESTIONS.length) * 100}%` }}
-              />
+            {/* Timer y Progreso visual */}
+            <div className="flex items-center gap-4">
+              <div className={`px-3 py-1.5 rounded-lg border font-mono text-sm font-bold flex items-center gap-1.5
+                ${examTimeLeft < 60 
+                  ? 'bg-red-500/10 border-red-500/30 text-red-400 animate-pulse' 
+                  : examTimeLeft < 300
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                    : 'bg-surface-elevated border-surface-border text-text-primary'
+                }`}
+              >
+                <span>⏱️</span>
+                <span>{formatTime(examTimeLeft)}</span>
+              </div>
+              <div className="w-24 h-2 bg-surface-elevated rounded-full overflow-hidden hidden sm:block">
+                <div
+                  className="h-full bg-brand-600 rounded-full transition-all duration-300"
+                  style={{ width: `${((currentIdx + 1) / shuffledQuestions.length) * 100}%` }}
+                />
+              </div>
             </div>
           </div>
 
           {/* Pregunta */}
-          {QUESTIONS[currentIdx] && (
+          {shuffledQuestions[currentIdx] && (
             <div ref={questionRef} className="flex flex-col gap-4">
               <h3 className="text-fluid-xl font-bold text-text-primary leading-snug">
-                {QUESTIONS[currentIdx].question}
+                {shuffledQuestions[currentIdx].question}
               </h3>
               
               {/* Opciones */}
               <div className="flex flex-col gap-3 mt-2">
-                {QUESTIONS[currentIdx].options.map((option, idx) => {
+                {shuffledQuestions[currentIdx].options.map((option, idx) => {
                   const isSelected = answers[currentIdx] === idx
-                  // Split "A) Rest of text" → prefix "A)" + body
-                  const prefixMatch = option.match(/^([A-D]\))\s*/)
-                  const prefix = prefixMatch ? prefixMatch[1] : ''
-                  const body = prefixMatch ? option.slice(prefixMatch[0].length) : option
+                  const body = stripPrefix(option)
                   return (
                     <button
                       key={idx}
@@ -309,7 +462,7 @@ export function EvaluationSlide() {
                         {isSelected && '✓'}
                       </span>
                       <span className="leading-tight">
-                        {prefix && <span className="font-bold">{prefix} </span>}{body}
+                        {body}
                       </span>
                     </button>
                   )
@@ -332,7 +485,7 @@ export function EvaluationSlide() {
               disabled={answers[currentIdx] === undefined}
               className="btn-primary px-6 py-2.5 text-sm flex items-center gap-1.5"
             >
-              {currentIdx === QUESTIONS.length - 1 ? 'Finalizar y Calificar 🏆' : 'Siguiente →'}
+              {currentIdx === shuffledQuestions.length - 1 ? 'Finalizar y Calificar 🏆' : 'Siguiente →'}
             </button>
           </div>
         </div>
@@ -434,9 +587,9 @@ export function EvaluationSlide() {
                 Revisión detallada de preguntas:
               </h3>
               <div className="flex flex-col gap-4">
-                {QUESTIONS.map((q, index) => {
+                {shuffledQuestions.map((q, index) => {
                   const userAnswer = answers[index]
-                  const isCorrect = userAnswer === q.correctAnswer
+                  const isCorrect = userAnswer === q.correctAnswerIdx
                   return (
                     <div
                       key={q.id}
@@ -457,14 +610,16 @@ export function EvaluationSlide() {
                         <div className="text-sm">
                           <span className="text-text-muted">Tu respuesta:</span>{' '}
                           <span className={`font-semibold ${isCorrect ? 'text-brand-400' : 'text-red-400'}`}>
-                            {q.options[userAnswer] ?? '(Sin responder)'}
+                            {userAnswer !== undefined && q.options[userAnswer]
+                              ? stripPrefix(q.options[userAnswer])
+                              : '(Sin responder)'}
                           </span>
                         </div>
                         {!isCorrect && (
                           <div className="text-sm">
                             <span className="text-text-muted">Respuesta correcta:</span>{' '}
                             <span className="text-brand-400 font-semibold">
-                              {q.options[q.correctAnswer]}
+                              {stripPrefix(q.options[q.correctAnswerIdx])}
                             </span>
                           </div>
                         )}
