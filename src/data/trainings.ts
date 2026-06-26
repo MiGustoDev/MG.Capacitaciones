@@ -31,6 +31,7 @@ export const TRAININGS: Training[] = [
     tagline: 'Próximamente',
     description: 'Técnicas de armado, repulgue y control de calidad de empanadas.',
     themeColor: 'white',
+    totalColaboradores: 47,
   },
   {
     id: 'carnes',
@@ -41,6 +42,7 @@ export const TRAININGS: Training[] = [
     tagline: 'Próximamente',
     description: 'Molienda, preparación y control de calidad de rellenos cárnicos.',
     themeColor: 'red',
+    totalColaboradores: 7,
   },
   {
     id: 'cocina',
@@ -51,6 +53,7 @@ export const TRAININGS: Training[] = [
     tagline: 'Próximamente',
     description: 'Cocción de ingredientes, control de temperaturas y puntos de cocción.',
     themeColor: 'green',
+    totalColaboradores: 12,
   },
   {
     id: 'picadillo',
@@ -61,6 +64,7 @@ export const TRAININGS: Training[] = [
     tagline: 'Próximamente',
     description: 'Elaboración de picadillos y salsas para rellenos.',
     themeColor: 'yellow',
+    totalColaboradores: 13,
   },
   {
     id: 'logistica',
@@ -71,5 +75,6 @@ export const TRAININGS: Training[] = [
     tagline: 'Próximamente',
     description: 'Recepción de mercadería, control de proveedores y cadena de frío.',
     themeColor: 'black',
+    totalColaboradores: 13,
   },
 ]
