@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
+import { getAssetUrl } from '../../utils/assets'
 import type { LessonContent } from '../../data/types'
 import type { Module } from '../../data/types'
 
@@ -21,13 +22,23 @@ export function ModuleHero({ content, module }: ModuleHeroProps) {
     return () => ctx.revert()
   }, [module.id])
 
+  const isImageIcon = module.icon.startsWith('/') || module.icon.includes('.')
+
   return (
     <div ref={ref} className="flex flex-col items-center justify-center text-center gap-6 py-8 w-full">
       {/* Module number pill */}
       <div className="mh-icon opacity-0">
         <div className="relative inline-flex">
-          <div className="w-24 h-24 rounded-2xl bg-gradient-brand flex items-center justify-center shadow-glow">
-            <span className="text-5xl" role="img" aria-label={module.title}>{module.icon}</span>
+          <div className={`${isImageIcon ? 'w-32 h-32' : 'w-24 h-24 rounded-2xl bg-gradient-brand shadow-glow'} flex items-center justify-center`}>
+            {isImageIcon ? (
+              <img
+                src={getAssetUrl(module.icon)}
+                alt={module.title}
+                className="w-full h-full object-contain select-none pointer-events-none scale-150"
+              />
+            ) : (
+              <span className="text-5xl" role="img" aria-label={module.title}>{module.icon}</span>
+            )}
           </div>
           <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-surface flex items-center justify-center
                           border-2 border-brand-600 text-brand-400 text-xs font-bold">

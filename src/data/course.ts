@@ -848,7 +848,7 @@ export const COURSE_ARMADO: Course = {
       options: [
         "A) Cubrir correctamente la bandeja.",
         "B) Utilizarse únicamente en algunos gustos.",
-        "C) Colocarse después del congelado.",
+        "C) Colocarse después del almacenado.",
         "D) Reemplazarse por cualquier papel disponible."
       ],
       correctAnswer: 0
@@ -914,7 +914,7 @@ export const COURSE_ARMADO: Course = {
       options: [
         "A) Que las máquinas estén correctamente armadas y limpias.",
         "B) Que las planillas estén archivadas.",
-        "C) Que existan empanadas congeladas en cámara.",
+        "C) Que existan empanadas en cámara.",
         "D) Que todas las etiquetas estén impresas."
       ],
       correctAnswer: 0
@@ -1171,7 +1171,7 @@ export const COURSE_ARMADO: Course = {
       number: 2,
       title: 'Tapero',
       description: 'Suministro y manipulación de tapas.',
-      icon: '🥯',
+      icon: '/diapositivas/armado/TapaDeEmpanada.png',
       color: 'amber-500',
       colorHex: '#f59e0b',
       lessons: [
@@ -1362,7 +1362,7 @@ export const COURSE_ARMADO: Course = {
             subtitle: 'Preparación',
             imageSuggested: 'Limpieza de máquina y cambio de matrices',
             imageAlt: 'Limpieza de máquina y cambio de matrices',
-            image: '/diapositivas/armado/12linpiezamarcacion maquina limpia (1).jpeg',
+            image: '/diapositivas/armado/12limpieza.jpeg',
             steps: [
               { number: 1, title: 'Cambio de matrices', description: 'Debe realizar los cambios necesarios según el producto a elaborar. Una matriz incorrecta puede generar defectos en el producto final y perdidas productivas.' },
               { number: 2, title: 'Limpieza de máquina', description: 'Debe mantener la máquina limpia utilizando IAC según corresponda. La limpieza continua ayuda a prevenir contaminación y acumulación de residuos.' },
@@ -1393,7 +1393,7 @@ export const COURSE_ARMADO: Course = {
             description: 'Debe informar al Checker cuando detecte situaciones especiales durante la producción.',
             imageSuggested: 'Comunicación de desvíos y tapas defectuosas',
             imageAlt: 'Comunicación de desvíos y tapas defectuosas',
-            image: '/diapositivas/armado/13DESVIOStapas defectuosas (4).jpeg',
+            image: '/diapositivas/armado/13desvios.jpeg',
             highlight: 'La comunicación rápida permite corregir problemas antes de que afecten grandes cantidades de producto.',
             highlightVariant: 'warning',
           },
@@ -1431,7 +1431,7 @@ export const COURSE_ARMADO: Course = {
             subtitle: 'Asistencia operativa',
             imageSuggested: 'Carros para transporte de materiales',
             imageAlt: 'Carros para transporte de materiales',
-            image: '/diapositivas/armado/carros (1).jpeg',
+            image: '/diapositivas/armado/carros.jpeg',
             steps: [
               { number: 1, title: 'Soporte a producción', description: 'Debe mantenerse atento a las necesidades de las máquinas y operarios. Su respuesta rápida permite mantener la continuidad de la producción.' },
               { number: 2, title: 'Manejo de materiales', description: 'Entre sus tareas se encuentran: abrir tapas, retirar bateas vacías, llevar carros con bateas sucias a bacha (controlando que no contengan restos de productos) y transportar cajones vacíos usando el carro correspondiente. Todo traslado debe realizarse de manera ordenada y segura.' },

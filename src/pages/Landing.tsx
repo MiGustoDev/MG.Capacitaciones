@@ -4,6 +4,7 @@ import gsap from 'gsap'
 import { usePageNavigate } from '../hooks/usePageNavigate'
 import { useCourse } from '../context/CourseContext'
 import { COURSES_DATA, getTotalLessons } from '../data/course'
+import { getAssetUrl } from '../utils/assets'
 
 const MODULE_COLORS: Record<string, string> = {
   intro: 'border-brand-600/40 bg-brand-600/10',
@@ -155,7 +156,17 @@ export function Landing({ trainingId }: LandingProps) {
                 className={`module-card opacity-0 border rounded-2xl p-3 sm:p-5 text-left ${MODULE_COLORS[mod.id] ?? 'border-surface-border bg-surface-card'}`}
               >
                 <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                  <span className="text-xl sm:text-2xl" aria-hidden="true">{mod.icon}</span>
+                  {mod.icon.startsWith('/') || mod.icon.includes('.') ? (
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <img
+                        src={getAssetUrl(mod.icon)}
+                        alt={mod.title}
+                        className="w-full h-full object-contain select-none pointer-events-none scale-150"
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-xl sm:text-2xl" aria-hidden="true">{mod.icon}</span>
+                  )}
                   <div>
                     <p className="text-[9px] sm:text-xs text-text-muted uppercase tracking-wider">Bloque {mod.number}</p>
                     <h3 className={`font-bold text-xs sm:text-fluid-base leading-tight ${MODULE_TEXT[mod.id] ?? 'text-text-primary'}`}>

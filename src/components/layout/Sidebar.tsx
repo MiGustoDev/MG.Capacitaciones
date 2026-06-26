@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import { usePageNavigate } from '../../hooks/usePageNavigate'
 import { useCourse } from '../../context/CourseContext'
 import { getFlatLessons } from '../../data/course'
+import { getAssetUrl } from '../../utils/assets'
 import type { Lesson, Module } from '../../data/types'
 
 interface SidebarProps {
@@ -155,12 +156,23 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         {courseData.modules.map(mod => {
           const completedInModule = mod.lessons.filter(l => isLessonCompleted(l.id)).length
           const isCurrent = mod.id === progress.currentModuleId
+          const isImageIcon = mod.icon.startsWith('/') || mod.icon.includes('.')
 
           return (
             <div key={mod.id}>
               {/* Module label */}
               <div className={`flex items-center gap-2 px-3 mb-2 ${isCurrent ? 'text-text-primary' : 'text-text-muted'}`}>
-                <span className="text-base" aria-hidden="true">{mod.icon}</span>
+                {isImageIcon ? (
+                  <div className="w-7 h-7 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <img
+                      src={getAssetUrl(mod.icon)}
+                      alt={mod.title}
+                      className="w-full h-full object-contain select-none pointer-events-none scale-150"
+                    />
+                  </div>
+                ) : (
+                  <span className="text-base" aria-hidden="true">{mod.icon}</span>
+                )}
                 <span className="text-xs font-bold uppercase tracking-wider">{mod.title}</span>
                 <span className="ml-auto text-xs text-text-muted">
                   {completedInModule}/{mod.lessons.length}
