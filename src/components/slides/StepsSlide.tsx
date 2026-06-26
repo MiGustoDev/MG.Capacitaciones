@@ -1,6 +1,7 @@
 import { useGSAPEntrance } from '../../hooks/useGSAPEntrance'
 import { useGSAPStaggerList } from '../../hooks/useGSAPEntrance'
 import { BadgePill } from '../ui/HighlightBlock'
+import { ImagePlaceholder } from '../ui/ImagePlaceholder'
 import type { LessonContent } from '../../data/types'
 
 interface StepsSlideProps { content: LessonContent }
@@ -8,9 +9,22 @@ interface StepsSlideProps { content: LessonContent }
 export function StepsSlide({ content }: StepsSlideProps) {
   const headerRef = useGSAPEntrance({ y: 20, duration: 0.5 })
   const listRef = useGSAPStaggerList<HTMLOListElement>('li', { delay: 0.3, stagger: 0.1 })
+  const hasImage = !!(content.imageSuggested || content.image)
 
-  return (
-    <div className="flex flex-col gap-6 w-full">
+  const imageBlock = hasImage ? (
+    <div className="flex-shrink-0 w-full max-w-xl lg:w-[45%] xl:w-[50%]">
+      <ImagePlaceholder
+        alt={content.imageAlt ?? content.title}
+        suggested={content.imageSuggested}
+        image={content.image}
+        aspectRatio="video"
+        objectFit={content.imageFit ?? 'contain'}
+      />
+    </div>
+  ) : null
+
+  const contentBlock = (
+    <div className="flex-1 flex flex-col gap-6">
       <div ref={headerRef} className="flex flex-col gap-3 opacity-0">
         {content.badge && <BadgePill label={content.badge} />}
         <h2 className="lesson-title">{content.title}</h2>
@@ -44,6 +58,13 @@ export function StepsSlide({ content }: StepsSlideProps) {
           ))}
         </ol>
       )}
+    </div>
+  )
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full">
+      {contentBlock}
+      {imageBlock}
     </div>
   )
 }

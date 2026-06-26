@@ -200,7 +200,7 @@ export const COURSE_CALIDAD: Course = {
             description: 'Garantizar la elaboración de alimentos seguros para el consumidor mediante el control del personal, las instalaciones y las operaciones.',
             imageSuggested: 'Foto general de la planta Mi Gusto',
             imageAlt: 'Planta de producción Mi Gusto',
-            image: '/diapositivas/BuenasPracticasManufactura.png',
+            image: '/diapositivas/bpm/BuenasPracticasManufactura.png',
             tagline: 'Mi Gusto · Capacitación obligatoria',
           },
         },
@@ -212,9 +212,9 @@ export const COURSE_CALIDAD: Course = {
             title: '¿Qué son las BPM?',
             description: 'Las Buenas Prácticas de Manufactura son un conjunto de procedimientos obligatorios establecidos por el Código Alimentario Argentino para asegurar la inocuidad de los alimentos.',
             badge: 'CAA',
-            imageSuggested: 'Producto terminado + consumidor satisfecho',
+            imageSuggested: 'Producto terminado + consumidor satisfied',
             imageAlt: 'Consumidor satisfecho con producto Mi Gusto',
-            image: '/diapositivas/queSonLasBPM.png',
+            image: '/diapositivas/bpm/queSonLasBPM.png',
             mobileStackedImageGrid: true,
             items: [
               { text: 'Alimentos seguros', icon: '✅' },
@@ -294,7 +294,7 @@ export const COURSE_CALIDAD: Course = {
             description: 'Pueden caer al producto y generar contaminación física.',
             imageSuggested: 'Foto comparativa Correcto vs Incorrecto',
             imageAlt: 'Comparación de uso de accesorios',
-            image: '/diapositivas/prohibidosEnPlanta.png',
+            image: '/diapositivas/bpm/prohibidosEnPlanta.png',
             highlight: 'Riesgo: Contaminación física del producto.',
             highlightVariant: 'danger',
           },
@@ -308,7 +308,7 @@ export const COURSE_CALIDAD: Course = {
             description: 'El uniforme debe mantenerse en condiciones óptimas en todo momento.',
             imageSuggested: 'Personal de Mi Gusto correctamente uniformado',
             imageAlt: 'Personal con uniforme completo',
-            image: '/diapositivas/Uniforme.png',
+            image: '/diapositivas/bpm/Uniforme.png',
             imageFit: 'contain',
             mobileStackedImageGrid: true,
             items: [
@@ -327,7 +327,7 @@ export const COURSE_CALIDAD: Course = {
             title: 'Uso Correcto de Cofia y Barbijo',
             imageSuggested: 'Ejemplo correcto e incorrecto de cofia y barbijo',
             imageAlt: 'Uso correcto e incorrecto de EPP facial',
-            image: '/diapositivas/UsoCorrectoBarbijo.png',
+            image: '/diapositivas/bpm/UsoCorrectoBarbijo.png',
           },
         },
         {
@@ -396,7 +396,7 @@ export const COURSE_CALIDAD: Course = {
             title: 'Pisos',
             imageSuggested: 'Piso sanitario de la planta',
             imageAlt: 'Piso lavable antideslizante de la planta',
-            image: '/diapositivas/pisos.png',
+            image: '/diapositivas/bpm/pisos.png',
           },
         },
         {
@@ -407,7 +407,7 @@ export const COURSE_CALIDAD: Course = {
             title: 'Paredes y Techos',
             imageSuggested: 'Ejemplo correcto e incorrecto de paredes',
             imageAlt: 'Estado de paredes y techos',
-            image: '/diapositivas/paredesYtechos.png',
+            image: '/diapositivas/bpm/paredesYtechos.png',
             mobileItemsGrid: true,
             compareColumns: [
               {
@@ -532,7 +532,7 @@ export const COURSE_CALIDAD: Course = {
             description: 'Separar correctamente para evitar contaminación cruzada.',
             imageSuggested: 'Depósito ordenado y correctamente organizado',
             imageAlt: 'Depósito ordenado de materias primas',
-            image: '/diapositivas/almacenamiento.png',
+            image: '/diapositivas/bpm/almacenamiento.png',
             mobileStackedImageGrid: true,
             items: [
               { text: 'Materias primas', icon: '📦' },
@@ -985,6 +985,7 @@ export const COURSE_ARMADO: Course = {
             description: 'El sector Armado es uno de los últimos controles antes de que las empanadas salgan a la venta. Cada puesto tiene tareas específicas que contribuyen a garantizar la calidad, inocuidad, trazabilidad y presentación del producto.',
             imageSuggested: 'Operarios armando empanadas en línea de producción',
             imageAlt: 'Línea de armado de empanadas',
+            image: '/diapositivas/armado/1armado.png',
             tagline: 'Mi Gusto · Capacitación de Sector',
           },
         },
@@ -1054,6 +1055,11 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Control del Producto',
             description: 'Durante la producción debe verificar:',
+            imageSuggested: 'Control de producto en balanza',
+            imageAlt: 'Control de producto en balanza',
+            image: '/diapositivas/armado/2control producto (2).png',
+            imageFit: 'contain',
+            mobileStackedImageGrid: true,
             items: [
               { text: 'Peso de las empanadas: Realizar controles de peso frecuentes para asegurar el cumplimiento de las especificaciones.', icon: '⚖️' },
               { text: 'Estado general: Controlar que las empanadas estén correctamente cerradas, no estén abiertas, no estén manchadas, no presenten daños y cumplan con el peso establecido.', icon: '🥟' },
@@ -1068,6 +1074,11 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Control de Etiquetas',
             description: 'Las etiquetas son fundamentales para la trazabilidad. Debe verificar que:',
+            imageSuggested: 'Control de etiquetas de trazabilidad',
+            imageAlt: 'Control de etiquetas de trazabilidad',
+            image: '/diapositivas/armado/3controletiqueta.png',
+            imageFit: 'contain',
+            mobileStackedImageGrid: true,
             items: [
               { text: 'Correspondan al producto elaborado', icon: '🏷️' },
               { text: 'Sean legibles', icon: '👀' },
@@ -1083,6 +1094,11 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Contramuestras',
             description: 'El Checker debe realizar las siguientes acciones:',
+            imageSuggested: 'Carros de contramuestras',
+            imageAlt: 'Carros de contramuestras',
+            image: '/diapositivas/armado/4carros de contramuestras (1).jpeg',
+            imageFit: 'contain',
+            mobileStackedImageGrid: true,
             items: [
               { text: 'Colocar la etiqueta de contramuestra', icon: '🏷️' },
               { text: 'Guardar las empanadas destinadas a contramuestra', icon: '📦' },
@@ -1099,6 +1115,11 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Materias Primas y Producción',
             description: 'Debe controlar:',
+            imageSuggested: 'Control de materias primas y sistema Usar Primero',
+            imageAlt: 'Control de materias primas y sistema Usar Primero',
+            image: '/diapositivas/armado/5usar primero (2).jpeg',
+            imageFit: 'contain',
+            mobileStackedImageGrid: true,
             items: [
               { text: 'Uso correcto del sistema "Usar Primero"', icon: '🔄' },
               { text: 'Estado de los rellenos', icon: '🍲' },
@@ -1114,6 +1135,9 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Gestión de Anomalías',
             description: 'Toda anomalía detectada debe ser comunicada y registrada. Por ejemplo:',
+            imageSuggested: 'Reporte y control de anomalías en empanadas',
+            imageAlt: 'Reporte y control de anomalías en empanadas',
+            image: '/diapositivas/armado/6ANOMALIAS emp con guante (1).jpeg',
             items: [
               { text: 'Cuerpos extraños o seguros encontrados en el producto', icon: '⚠️' },
               { text: 'Tapas defectuosas o bateas rotas', icon: '❌' },
@@ -1169,6 +1193,9 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Control de Temperatura y Torres',
             subtitle: 'Condiciones y organización',
+            imageSuggested: 'Torre de tapas sobre cajón vacío',
+            imageAlt: 'Torre de tapas sobre cajón vacío',
+            image: '/diapositivas/armado/7TORRES torre de tapas (1).png',
             steps: [
               { number: 1, title: 'Control de temperatura', description: 'Las tapas deben mantenerse dentro de las condiciones establecidas para asegurar un correcto funcionamiento durante el armado. Por ello debe controlar periódicamente su temperatura.' },
               { number: 2, title: 'Armado de torres', description: 'Las torres deben realizarse utilizando un cajón vacío como base. Esto evita deformaciones y facilita la manipulación segura del producto.' },
@@ -1182,6 +1209,9 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Manipulación Correcta',
             description: 'Durante la tarea, siga las pautas de manipulación:',
+            imageSuggested: 'Manipulación y control de tapas defectuosas',
+            imageAlt: 'Manipulación y control de tapas defectuosas',
+            image: '/diapositivas/armado/8MANIPULACIONtapas defectuosas (1).jpeg',
             compareColumns: [
               {
                 label: 'Prácticas Prohibidas ❌',
@@ -1205,6 +1235,9 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Control Visual',
             description: 'Debe verificar continuamente:',
+            imageSuggested: 'Control visual de tapas defectuosas',
+            imageAlt: 'Control visual de tapas defectuosas',
+            image: '/diapositivas/armado/9CONTROLVISUAL tapas defectuosas (2).jpeg',
             items: [
               { text: 'Estado de las tapas y presencia de roturas', icon: '🔍' },
               { text: 'Defectos y cambios de color', icon: '🎨' },
@@ -1245,6 +1278,9 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Peso y Marcación',
             subtitle: 'Controles críticos',
+            imageSuggested: 'Control de peso y marcación del producto',
+            imageAlt: 'Control de peso y marcación del producto',
+            image: '/diapositivas/armado/8PESOMARCACIONcontrol producto (1).jpeg',
             steps: [
               { number: 1, title: 'Control de peso', description: 'Debe realizar verificaciones en balanza para asegurar que el producto se encuentra dentro de especificación. Debe dar aviso al cargador del peso de las empanadas.' },
               { number: 2, title: 'Control de marcación', description: 'Debe verificar que la marcación corresponda al gusto elaborado y que sea legible. Una marcación incorrecta puede provocar errores de identificación en etapas posteriores.' },
@@ -1258,6 +1294,9 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Separación de Productos Defectuosos',
             description: 'Debe retirar inmediatamente empanadas que presenten:',
+            imageSuggested: 'Detección y descarte de empanadas defectuosas',
+            imageAlt: 'Detección y descarte de empanadas defectuosas',
+            image: '/diapositivas/armado/10emp defectuosas (1).jpeg',
             items: [
               { text: 'Bajo peso', icon: '⚖️' },
               { text: 'Aperturas', icon: '💥' },
@@ -1277,6 +1316,11 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Armado de Bandejas',
             description: 'Debe verificar:',
+            imageSuggested: 'Armado de bandeja completa',
+            imageAlt: 'Armado de bandeja completa',
+            image: '/diapositivas/armado/11bandejasbandeja completa (1).jpeg',
+            imageFit: 'contain',
+            mobileStackedImageGrid: true,
             items: [
               { text: 'Cantidad correcta de unidades', icon: '🔢' },
               { text: 'Correcta ubicación de las empanadas', icon: '📐' },
@@ -1316,6 +1360,9 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Matrices y Limpieza',
             subtitle: 'Preparación',
+            imageSuggested: 'Limpieza de máquina y cambio de matrices',
+            imageAlt: 'Limpieza de máquina y cambio de matrices',
+            image: '/diapositivas/armado/12linpiezamarcacion maquina limpia (1).jpeg',
             steps: [
               { number: 1, title: 'Cambio de matrices', description: 'Debe realizar los cambios necesarios según el producto a elaborar. Una matriz incorrecta puede generar defectos en el producto final y perdidas productivas.' },
               { number: 2, title: 'Limpieza de máquina', description: 'Debe mantener la máquina limpia utilizando IAC según corresponda. La limpieza continua ayuda a prevenir contaminación y acumulación de residuos.' },
@@ -1344,6 +1391,9 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Comunicación de Desvíos',
             description: 'Debe informar al Checker cuando detecte situaciones especiales durante la producción.',
+            imageSuggested: 'Comunicación de desvíos y tapas defectuosas',
+            imageAlt: 'Comunicación de desvíos y tapas defectuosas',
+            image: '/diapositivas/armado/13DESVIOStapas defectuosas (4).jpeg',
             highlight: 'La comunicación rápida permite corregir problemas antes de que afecten grandes cantidades de producto.',
             highlightVariant: 'warning',
           },
@@ -1379,6 +1429,9 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Soporte y Materiales',
             subtitle: 'Asistencia operativa',
+            imageSuggested: 'Carros para transporte de materiales',
+            imageAlt: 'Carros para transporte de materiales',
+            image: '/diapositivas/armado/carros (1).jpeg',
             steps: [
               { number: 1, title: 'Soporte a producción', description: 'Debe mantenerse atento a las necesidades de las máquinas y operarios. Su respuesta rápida permite mantener la continuidad de la producción.' },
               { number: 2, title: 'Manejo de materiales', description: 'Entre sus tareas se encuentran: abrir tapas, retirar bateas vacías, llevar carros con bateas sucias a bacha (controlando que no contengan restos de productos) y transportar cajones vacíos usando el carro correspondiente. Todo traslado debe realizarse de manera ordenada y segura.' },
@@ -1408,6 +1461,9 @@ export const COURSE_ARMADO: Course = {
           content: {
             title: 'Preparación de Máquinas',
             description: 'Antes de iniciar la producción debe verificar:',
+            imageSuggested: 'Estado general de limpieza y armado de máquina',
+            imageAlt: 'Estado general de limpieza y armado de máquina',
+            image: '/diapositivas/armado/marcacion maquina limpia (2).jpeg',
             items: [
               { text: 'Correcto armado de las máquinas', icon: '🔧' },
               { text: 'Ausencia de restos de masa', icon: '🧹' },

@@ -34,7 +34,7 @@ export function HeroSlide({ content }: HeroSlideProps) {
           suggested={content.imageSuggested}
           image={content.image}
           aspectRatio="video"
-          objectFit={content.imageFit ?? "cover"}
+          objectFit={content.imageFit ?? "contain"}
         />
       </div>
     </div>
