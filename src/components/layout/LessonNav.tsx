@@ -117,9 +117,20 @@ export function TopBar({ currentModuleId, currentLessonId, onMenuToggle }: TopBa
 
       {/* Breadcrumb */}
       <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-        <p className="text-xs text-text-muted truncate">
-          {module?.icon} {module?.title} · Lección {lessonIndex + 1}/{module?.lessons.length ?? 0}
-        </p>
+        <div className="flex items-center gap-1.5 text-xs text-text-muted truncate">
+          {module?.icon && (module.icon.startsWith('/') || module.icon.includes('.')) ? (
+            <img
+              src={getAssetUrl(module.icon)}
+              alt=""
+              className="w-4 h-4 object-contain select-none pointer-events-none"
+            />
+          ) : (
+            <span aria-hidden="true">{module?.icon}</span>
+          )}
+          <span>
+            {module?.title} · Lección {lessonIndex + 1}/{module?.lessons.length ?? 0}
+          </span>
+        </div>
         <p className="text-sm font-semibold text-text-primary truncate">
           {lesson?.title}
         </p>

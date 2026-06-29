@@ -26,31 +26,13 @@ export function ImagePlaceholder({
     : 'aspect-video'
 
   if (image && !hasError) {
-    const isContain = objectFit === 'contain'
-    if (isContain) {
-      return (
-        <div className={`mx-auto flex items-center justify-center relative ${className}`}>
-          <img
-            src={getAssetUrl(image)}
-            alt={alt}
-            className="max-w-full h-auto max-h-[inherit] object-contain select-none pointer-events-none rounded-xl border border-surface-border bg-surface-elevated"
-            onError={() => setHasError(true)}
-          />
-        </div>
-      )
-    }
-
     return (
-      <div
-        className={`w-full ${ratioClass} rounded-xl overflow-hidden border border-surface-border bg-surface-elevated flex items-center justify-center relative ${className}`}
-      >
-        <img
-          src={getAssetUrl(image)}
-          alt={alt}
-          className="w-full h-full object-cover select-none pointer-events-none"
-          onError={() => setHasError(true)}
-        />
-      </div>
+      <img
+        src={getAssetUrl(image)}
+        alt={alt}
+        className={`w-full h-auto max-h-[65vh] md:max-h-[70vh] rounded-xl border border-surface-border object-cover select-none pointer-events-none ${className}`}
+        onError={() => setHasError(true)}
+      />
     )
   }
 

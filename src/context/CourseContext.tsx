@@ -310,7 +310,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
 
   // Persist progress and save to server
   useEffect(() => {
-    if (progress.trainingId) {
+    if (progress.trainingId && progress.userName) {
       localStorage.setItem(`bpm-mi-gusto-progress_${progress.trainingId}`, JSON.stringify(progress))
       saveParticipantToGlobalList(progress)
     }
@@ -352,6 +352,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
 
   const setUserName = useCallback(async (name: string, trainingId?: string) => {
     const tId = trainingId || activeTrainingId
+    let dbProgress: ProgressState | null = null
 
     try {
       const { data, error } = await supabase
@@ -366,12 +367,36 @@ export function CourseProvider({ children }: { children: ReactNode }) {
       }
 
       if (data) {
-        throw new Error('ALREADY_REGISTERED')
+        const dbFailed = data.evaluation_failed ?? undefined
+        const dbScore = data.evaluation_score ?? undefined
+        const dbLessonsCount = data.completed_lessons_count || 0
+        const dbCompletedAt = data.completed_at || null
+
+        const flat = getFlatLessons(COURSES_DATA[tId] || COURSES_DATA.calidad)
+        const completedLessons = flat.slice(0, dbLessonsCount).map(l => l.id)
+        
+        let currentModuleId = COURSES_DATA[tId]?.modules[0].id || ''
+        let currentLessonId = COURSES_DATA[tId]?.modules[0].lessons[0].id || ''
+        
+        const nextIndex = Math.min(dbLessonsCount, flat.length - 1)
+        if (flat[nextIndex]) {
+          currentModuleId = flat[nextIndex].moduleId
+          currentLessonId = flat[nextIndex].id
+        }
+
+        dbProgress = {
+          completedLessons,
+          currentModuleId,
+          currentLessonId,
+          startedAt: data.started_at || new Date().toISOString(),
+          completedAt: dbCompletedAt,
+          userName: name,
+          evaluationScore: dbScore,
+          evaluationFailed: dbFailed,
+          trainingId: tId
+        }
       }
     } catch (e: any) {
-      if (e.message === 'ALREADY_REGISTERED') {
-        throw e
-      }
       console.error('Error in setUserName sync:', e)
     }
 
@@ -380,6 +405,11 @@ export function CourseProvider({ children }: { children: ReactNode }) {
     setActiveTrainingId(tId)
 
     setProgress(prev => {
+      if (dbProgress) {
+        localStorage.setItem(`bpm-mi-gusto-progress_${tId}`, JSON.stringify(dbProgress))
+        return dbProgress
+      }
+
       // Try to load progress for this trainingId from local storage
       const saved = localStorage.getItem(`bpm-mi-gusto-progress_${tId}`)
       if (saved) {
@@ -406,8 +436,8 @@ export function CourseProvider({ children }: { children: ReactNode }) {
     const globalUser = localStorage.getItem(GLOBAL_USERNAME_KEY) || ''
 
     setProgress(prev => {
-      // First save current training progress
-      if (prev.trainingId) {
+      // First save current training progress if there is a logged in user
+      if (prev.trainingId && prev.userName) {
         localStorage.setItem(`bpm-mi-gusto-progress_${prev.trainingId}`, JSON.stringify(prev))
       }
 
@@ -510,13 +540,29 @@ export function CourseProvider({ children }: { children: ReactNode }) {
         const dbCompletedAt = data.completed_at || null
 
         setProgress(prev => {
-          const needsUpdate =
-            prev.evaluationFailed !== dbFailed ||
-            prev.evaluationScore !== dbScore ||
-            (dbCompletedAt && prev.completedAt !== dbCompletedAt) ||
-            prev.completedLessons.length < dbLessonsCount
+          const localLessonsCount = prev.completedLessons.length
+          const localHasEval = prev.evaluationScore !== undefined || prev.evaluationFailed !== undefined
+          const dbHasEval = dbScore !== undefined || dbFailed !== undefined
 
-          if (needsUpdate) {
+          // Check if local progress is MORE advanced than the DB state
+          const localIsMoreAdvanced =
+            localLessonsCount > dbLessonsCount ||
+            (localLessonsCount === dbLessonsCount && localHasEval && !dbHasEval)
+
+          if (localIsMoreAdvanced) {
+            // Push more advanced local progress to the DB
+            setTimeout(() => {
+              saveParticipantToGlobalList(prev)
+            }, 0)
+            return prev
+          }
+
+          // Otherwise, if DB is more advanced, update local state
+          const dbIsMoreAdvanced =
+            dbLessonsCount > localLessonsCount ||
+            (dbLessonsCount === localLessonsCount && dbHasEval && !localHasEval)
+
+          if (dbIsMoreAdvanced) {
             const updated = {
               ...prev,
               evaluationFailed: dbFailed,
@@ -540,11 +586,21 @@ export function CourseProvider({ children }: { children: ReactNode }) {
 
           return prev
         })
+      } else {
+        // Participant does not exist in DB yet. Push local progress if we have any.
+        setProgress(prev => {
+          if (prev.completedLessons.length > 0 || prev.evaluationScore !== undefined) {
+            setTimeout(() => {
+              saveParticipantToGlobalList(prev)
+            }, 0)
+          }
+          return prev
+        })
       }
     } catch (e) {
       console.error('Error syncing with database:', e)
     }
-  }, [progress.userName, progress.trainingId])
+  }, [progress.userName, progress.trainingId, saveParticipantToGlobalList])
 
   // Auto-sync with Supabase on mount/init when userName is set
   useEffect(() => {
@@ -615,7 +671,18 @@ export function CourseProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem(GLOBAL_USERNAME_KEY)
     localStorage.removeItem(ACTIVE_TRAINING_KEY)
+    localStorage.removeItem('bpm-mi-gusto-legajo')
     
+    // Clear all progress and exam keys from localStorage
+    const keysToRemove: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && (key.startsWith('bpm-mi-gusto-progress_') || key.startsWith('bpm-mi-gusto-exam-state_'))) {
+        keysToRemove.push(key)
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key))
+
     // Reset state to initial default for 'calidad' without userName
     setProgress(defaultProgressFor('calidad'))
     setActiveTrainingId('calidad')

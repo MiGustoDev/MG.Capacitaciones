@@ -28,7 +28,7 @@ export function BulletListSlide({ content }: BulletListSlideProps) {
             suggested={content.imageSuggested}
             image={content.image}
             aspectRatio="video"
-            objectFit="contain"
+            objectFit="cover"
             className="max-h-[70vh] w-full"
           />
         )}
@@ -55,7 +55,7 @@ export function BulletListSlide({ content }: BulletListSlideProps) {
         suggested={content.imageSuggested}
         image={content.image}
         aspectRatio="square"
-        objectFit={content.imageFit ?? 'contain'}
+        objectFit={content.imageFit ?? 'cover'}
       />
     </div>
   ) : null

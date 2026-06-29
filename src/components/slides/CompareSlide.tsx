@@ -25,7 +25,7 @@ export function CompareSlide({ content }: CompareSlideProps) {
           suggested={content.imageSuggested}
           image={content.image}
           aspectRatio="wide"
-          objectFit="contain"
+          objectFit="cover"
           className={hasColumns ? "max-h-96 md:max-h-[480px] lg:max-h-[550px]" : "max-h-[70vh] w-full"}
         />
       )}

@@ -5,6 +5,7 @@ import { usePageNavigate } from '../hooks/usePageNavigate'
 import { supabase } from '../utils/supabase'
 import { getAssetUrl } from '../utils/assets'
 import { TRAININGS } from '../data/trainings'
+import { getSectorForUser } from '../data/sectors'
 
 const formatDuration = (startedAt?: string | null, completedAt?: string | null, lastUpdated?: string) => {
   if (!startedAt) return '-'
@@ -49,10 +50,46 @@ export function AdminPanel() {
   const [isExportPreviewOpen, setIsExportPreviewOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState({
     trabajador: true,
+    sector: true,
     estado: true,
     nota: true,
     tiempo: true
   })
+
+  const getSectorBadgeStyles = (sector: string) => {
+    const norm = sector.toUpperCase()
+    if (norm.includes('ARMADO')) {
+      return 'bg-brand-500/10 border-brand-500/20 text-brand-400'
+    }
+    if (norm.includes('CALIDAD')) {
+      return 'bg-blue-500/10 border-blue-500/20 text-blue-400'
+    }
+    if (norm.includes('COCINA')) {
+      return 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+    }
+    if (norm.includes('MANTENIMIENTO')) {
+      return 'bg-purple-500/10 border-purple-500/20 text-purple-400'
+    }
+    if (norm.includes('CARNES')) {
+      return 'bg-red-500/10 border-red-500/20 text-red-400'
+    }
+    if (norm.includes('LOGISTICA')) {
+      return 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
+    }
+    if (norm.includes('PICADILLO')) {
+      return 'bg-orange-500/10 border-orange-500/20 text-orange-400'
+    }
+    if (norm.includes('SALSAS')) {
+      return 'bg-pink-500/10 border-pink-500/20 text-pink-400'
+    }
+    if (norm.includes('SANIDAD')) {
+      return 'bg-teal-500/10 border-teal-500/20 text-teal-400'
+    }
+    if (norm.includes('PROVEEDORES')) {
+      return 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
+    }
+    return 'bg-slate-500/10 border-slate-500/20 text-slate-400'
+  }
 
   // Auth States
   const [session, setSession] = useState<any>(null)
@@ -231,16 +268,19 @@ export function AdminPanel() {
             const list = JSON.parse(saved)
             const filtered = list.filter((p: any) => !(p.userName === userName && p.trainingId === trainingId))
             localStorage.setItem('bpm-capacitaciones-all-participants', JSON.stringify(filtered))
-            
-            const activeProgressStr = localStorage.getItem('bpm-mi-gusto-progress')
-            if (activeProgressStr) {
-              const activeProgress = JSON.parse(activeProgressStr)
-              if (activeProgress.userName === userName && (activeProgress.trainingId || 'calidad') === trainingId) {
-                localStorage.removeItem('bpm-mi-gusto-progress')
-                window.location.reload()
-                return
-              }
-            }
+          }
+
+          localStorage.removeItem(`bpm-mi-gusto-progress_${trainingId}`)
+          localStorage.removeItem(`bpm-mi-gusto-exam-state_${trainingId}`)
+          
+          const activeUser = localStorage.getItem('bpm-mi-gusto-global-username')
+          const activeTraining = localStorage.getItem('bpm-mi-gusto-active-training-id')
+          if (activeUser === userName && activeTraining === trainingId) {
+            localStorage.removeItem('bpm-mi-gusto-global-username')
+            localStorage.removeItem('bpm-mi-gusto-active-training-id')
+            localStorage.removeItem('bpm-mi-gusto-legajo')
+            window.location.reload()
+            return
           }
         } catch (e) {
           console.error(e)
@@ -279,6 +319,17 @@ export function AdminPanel() {
             const filtered = list.filter((p: any) => p.trainingId !== activeTab)
             localStorage.setItem('bpm-capacitaciones-all-participants', JSON.stringify(filtered))
           }
+          localStorage.removeItem(`bpm-mi-gusto-progress_${activeTab}`)
+          localStorage.removeItem(`bpm-mi-gusto-exam-state_${activeTab}`)
+          
+          const currentActiveTraining = localStorage.getItem('bpm-mi-gusto-active-training-id')
+          if (currentActiveTraining === activeTab) {
+             localStorage.removeItem('bpm-mi-gusto-global-username')
+             localStorage.removeItem('bpm-mi-gusto-active-training-id')
+             localStorage.removeItem('bpm-mi-gusto-legajo')
+             window.location.reload()
+             return
+          }
         } catch (e) {
           console.error(e)
         }
@@ -305,6 +356,7 @@ export function AdminPanel() {
 
     const headerParts: string[] = []
     if (visibleColumns.trabajador) headerParts.push('Trabajador')
+    if (visibleColumns.sector) headerParts.push('Sector')
     headerParts.push('Capacitación')
     if (visibleColumns.estado) headerParts.push('Estado')
     if (visibleColumns.nota) headerParts.push(`Correctas (de ${activeTab === 'armado' ? 22 : 15})`)
@@ -317,6 +369,7 @@ export function AdminPanel() {
       const rowParts: string[] = []
       
       if (visibleColumns.trabajador) rowParts.push(`"${p.userName}"`)
+      if (visibleColumns.sector) rowParts.push(`"${getSectorForUser(p.userName)}"`)
       rowParts.push(`"${trainingTitle}"`)
       
       if (visibleColumns.estado) {
@@ -708,6 +761,7 @@ export function AdminPanel() {
               <thead>
                 <tr className="bg-surface border-b border-surface-border text-xs text-text-muted uppercase font-bold tracking-wider">
                   <th className="px-5 py-3.5">Trabajador</th>
+                  {visibleColumns.sector && <th className="px-5 py-3.5 text-center">Sector</th>}
                   <th className="px-5 py-3.5 text-center">Estado</th>
                   <th className="px-5 py-3.5 text-center">NOTA</th>
                   <th className="px-5 py-3.5 text-center">Tiempo</th>
@@ -717,13 +771,13 @@ export function AdminPanel() {
               <tbody className="divide-y divide-surface-border/40 text-sm">
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="px-5 py-10 text-center text-text-muted">
+                    <td colSpan={visibleColumns.sector ? 6 : 5} className="px-5 py-10 text-center text-text-muted">
                       Cargando registros de capacitación... 🔄
                     </td>
                   </tr>
                 ) : filteredAndSorted.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-5 py-10 text-center text-text-muted">
+                    <td colSpan={visibleColumns.sector ? 6 : 5} className="px-5 py-10 text-center text-text-muted">
                       No se encontraron registros de capacitación.
                     </td>
                   </tr>
@@ -732,6 +786,7 @@ export function AdminPanel() {
                     const isPassed = p.evaluationFailed === false
                     const isFailed = p.evaluationFailed === true
                     const isInProgress = !isPassed && !isFailed
+                    const sector = getSectorForUser(p.userName)
 
                     return (
                       <tr key={`${p.userName}-${p.trainingId}`} className="hover:bg-surface-elevated/20 transition-colors">
@@ -739,6 +794,14 @@ export function AdminPanel() {
                         <td className="px-5 py-4 font-bold text-white">
                           {p.userName}
                         </td>
+                        {/* Sector */}
+                        {visibleColumns.sector && (
+                          <td className="px-5 py-4 text-center">
+                            <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border ${getSectorBadgeStyles(sector)}`}>
+                              {sector}
+                            </span>
+                          </td>
+                        )}
                         {/* Status badge */}
                         <td className="px-5 py-4 text-center">
                           {isPassed ? (
@@ -819,9 +882,14 @@ export function AdminPanel() {
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-bold text-white text-sm">{p.userName}</h4>
-                        <p className="text-[10px] text-text-muted mt-1">
-                          ⏱️ {formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}
-                        </p>
+                        <div className="flex flex-wrap gap-1.5 items-center mt-1.5">
+                          <span className={`inline-flex items-center text-[9px] font-bold px-2 py-0.5 rounded-full border ${getSectorBadgeStyles(getSectorForUser(p.userName))}`}>
+                            {getSectorForUser(p.userName)}
+                          </span>
+                          <span className="text-[10px] text-text-muted">
+                            ⏱️ {formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}
+                          </span>
+                        </div>
                       </div>
                       <div>
                         {isPassed ? (
@@ -905,6 +973,15 @@ export function AdminPanel() {
               <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
                 <input
                   type="checkbox"
+                  checked={visibleColumns.sector}
+                  onChange={(e) => setVisibleColumns(prev => ({ ...prev, sector: e.target.checked }))}
+                  className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
+                />
+                Sector
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
+                <input
+                  type="checkbox"
                   checked={visibleColumns.estado}
                   onChange={(e) => setVisibleColumns(prev => ({ ...prev, estado: e.target.checked }))}
                   className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
@@ -937,6 +1014,7 @@ export function AdminPanel() {
                 <thead>
                   <tr className="border-b border-gray-200 text-gray-700 uppercase font-bold bg-slate-50">
                     {visibleColumns.trabajador && <th className="px-5 py-4 text-left font-bold tracking-wider">TRABAJADOR</th>}
+                    {visibleColumns.sector && <th className="px-5 py-4 text-center font-bold tracking-wider">SECTOR</th>}
                     {visibleColumns.estado && <th className="px-5 py-4 text-center font-bold tracking-wider">ESTADO</th>}
                     {visibleColumns.nota && <th className="px-5 py-4 text-center font-bold tracking-wider">NOTA</th>}
                     {visibleColumns.tiempo && <th className="px-5 py-4 text-center font-bold tracking-wider">TIEMPO</th>}
@@ -951,6 +1029,7 @@ export function AdminPanel() {
                     return (
                       <tr key={p.userName} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
                         {visibleColumns.trabajador && <td className="px-5 py-4 text-left font-normal text-gray-400">{p.userName}</td>}
+                        {visibleColumns.sector && <td className="px-5 py-4 text-center font-medium text-gray-400">{getSectorForUser(p.userName)}</td>}
                         {visibleColumns.estado && <td className="px-5 py-4 text-center font-medium">{status}</td>}
                         {visibleColumns.nota && <td className="px-5 py-4 text-center font-medium">{score}</td>}
                         {visibleColumns.tiempo && <td className="px-5 py-4 text-center font-medium">{formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}</td>}
@@ -1107,6 +1186,7 @@ export function AdminPanel() {
               <thead>
                 <tr>
                   {visibleColumns.trabajador && <th className="align-left">Trabajador</th>}
+                  {visibleColumns.sector && <th className="align-center">Sector</th>}
                   {visibleColumns.estado && <th className="align-center">Estado</th>}
                   {visibleColumns.nota && <th className="align-center">Nota</th>}
                   {visibleColumns.tiempo && <th className="align-center">Tiempo</th>}
@@ -1122,6 +1202,7 @@ export function AdminPanel() {
                   return (
                     <tr key={p.userName}>
                       {visibleColumns.trabajador && <td className="align-left">{p.userName}</td>}
+                      {visibleColumns.sector && <td className="align-center">{getSectorForUser(p.userName)}</td>}
                       {visibleColumns.estado && <td className="align-center">{status}</td>}
                       {visibleColumns.nota && <td className="align-center">{score}</td>}
                       {visibleColumns.tiempo && <td className="align-center">{time}</td>}

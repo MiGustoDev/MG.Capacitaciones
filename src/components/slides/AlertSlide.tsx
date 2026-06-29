@@ -22,7 +22,7 @@ export function AlertSlide({ content }: AlertSlideProps) {
         suggested={content.imageSuggested}
         image={content.image}
         aspectRatio="video"
-        objectFit={content.imageFit ?? 'contain'}
+        objectFit={content.imageFit ?? 'cover'}
       />
     </div>
   ) : null

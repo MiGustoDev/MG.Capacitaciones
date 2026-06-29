@@ -21,6 +21,10 @@ export function Course() {
 
   // If no valid state found or accessing final lesson without passing the exam, redirect
   useEffect(() => {
+    if (!progress.userName) {
+      guardNavigate('/', { replace: true })
+      return
+    }
     if (!module || !lesson) {
       guardNavigate('/')
       return
@@ -31,7 +35,7 @@ export function Course() {
         goToLesson(evalModule.id, 'evaluacion-test')
       }
     }
-  }, [module, lesson, guardNavigate, isLessonCompleted, goToLesson, courseData, progress.evaluationFailed])
+  }, [progress.userName, module, lesson, guardNavigate, isLessonCompleted, goToLesson, courseData, progress.evaluationFailed])
 
   // Slide transition animation when lesson changes
   const lessonKey = `${progress.currentModuleId}-${progress.currentLessonId}`
