@@ -6,6 +6,8 @@ import { usePageNavigate } from '../hooks/usePageNavigate'
 import { getAssetUrl } from '../utils/assets'
 import { TRAININGS, type Training } from '../data/trainings'
 import { COURSES_DATA, getTotalLessons } from '../data/course'
+import { COLLABORATORS } from '../data/collaborators'
+import { supabase } from '../utils/supabase'
 
 const getColorClasses = (color: 'white' | 'red' | 'green' | 'yellow' | 'black' | 'blue', active: boolean) => {
   if (!active) {
@@ -85,6 +87,19 @@ export function Hub() {
   const modalOverlayRef = useRef<HTMLDivElement>(null)
   const modalCardRef = useRef<HTMLDivElement>(null)
 
+  // Autocomplete & PIN flow states
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [showPinModal, setShowPinModal] = useState(false)
+  const [pinFlowMode, setPinFlowMode] = useState<'verify' | 'create' | 'confirm'>('verify')
+  const [pendingUserName, setPendingUserName] = useState('')
+  const [targetPinCode, setTargetPinCode] = useState('')
+  const [pinDigits, setPinDigits] = useState<string[]>([])
+  const [tempCreatedPin, setTempCreatedPin] = useState('')
+  const [pinError, setPinError] = useState('')
+  const [pinSubmitting, setPinSubmitting] = useState(false)
+  const pinOverlayRef = useRef<HTMLDivElement>(null)
+  const pinCardRef = useRef<HTMLDivElement>(null)
+
   // Profile edit modal
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [profileName, setProfileName] = useState('')
@@ -145,6 +160,120 @@ export function Hub() {
     tl.to(modalCardRef.current, { opacity: 0, scale: 0.94, y: 8, duration: 0.2, ease: 'power2.in' })
       .to(modalOverlayRef.current, { opacity: 0, duration: 0.15, ease: 'power1.in' }, '-=0.05')
   }
+
+  // Animate PIN modal IN when showPinModal becomes true
+  useEffect(() => {
+    if (!showPinModal || !pinOverlayRef.current || !pinCardRef.current) return
+    gsap.fromTo(
+      pinOverlayRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.25, ease: 'power2.out' }
+    )
+    gsap.fromTo(
+      pinCardRef.current,
+      { opacity: 0, scale: 0.92, y: 12 },
+      { opacity: 1, scale: 1, y: 0, duration: 0.3, ease: 'back.out(1.4)' }
+    )
+  }, [showPinModal])
+
+  const handleClosePinModal = () => {
+    if (!pinOverlayRef.current || !pinCardRef.current) {
+      setShowPinModal(false)
+      setPinDigits([])
+      setPinError('')
+      return
+    }
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setShowPinModal(false)
+        setPinDigits([])
+        setPinError('')
+      },
+    })
+    tl.to(pinCardRef.current, { opacity: 0, scale: 0.94, y: 8, duration: 0.2, ease: 'power2.in' })
+      .to(pinOverlayRef.current, { opacity: 0, duration: 0.15, ease: 'power1.in' }, '-=0.05')
+  }
+
+  const handleKeypress = (key: string) => {
+    setPinError('')
+    if (key === 'delete') {
+      setPinDigits(prev => prev.slice(0, -1))
+    } else {
+      if (pinDigits.length < 4) {
+        setPinDigits(prev => [...prev, key])
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (pinDigits.length !== 4) return
+
+    const enteredPin = pinDigits.join('')
+    
+    const verifyAndLogin = async () => {
+      setPinSubmitting(true)
+      setPinError('')
+      
+      try {
+        if (pinFlowMode === 'verify') {
+          if (enteredPin === targetPinCode) {
+            // Correct PIN!
+            await setUserName(pendingUserName, selectedModuleId || 'calidad')
+            handleClosePinModal()
+            handleCloseModal()
+            navigate(selectedModuleId === 'calidad' ? '/calidad' : `/${selectedModuleId || 'calidad'}`)
+          } else {
+            // Incorrect PIN
+            setPinError('El PIN ingresado es incorrecto.')
+            setPinDigits([])
+            gsap.fromTo('.pin-dots-container', { x: -8 }, { x: 0, duration: 0.4, ease: 'rough({ template: sine.inOut, strength: 4, points: 5, taper: none, randomize: false })' })
+          }
+        } else if (pinFlowMode === 'create') {
+          setTempCreatedPin(enteredPin)
+          setPinFlowMode('confirm')
+          setPinDigits([])
+        } else if (pinFlowMode === 'confirm') {
+          if (enteredPin === tempCreatedPin) {
+            // Match! Save to Supabase
+            const { error } = await supabase
+              .from('collaborator_pins')
+              .upsert({
+                user_name: pendingUserName,
+                pin_code: enteredPin,
+                created_at: new Date().toISOString()
+              })
+            
+            if (error) {
+              console.error('Error saving PIN to Supabase:', error)
+            }
+
+            await setUserName(pendingUserName, selectedModuleId || 'calidad')
+            handleClosePinModal()
+            handleCloseModal()
+            setTempCreatedPin('')
+            navigate(selectedModuleId === 'calidad' ? '/calidad' : `/${selectedModuleId || 'calidad'}`)
+          } else {
+            setPinError('Los PINs no coinciden. Intentá de nuevo.')
+            setPinFlowMode('create')
+            setPinDigits([])
+            setTempCreatedPin('')
+            gsap.fromTo('.pin-dots-container', { x: -8 }, { x: 0, duration: 0.4, ease: 'rough({ template: sine.inOut, strength: 4, points: 5, taper: none, randomize: false })' })
+          }
+        }
+      } catch (err) {
+        console.warn('Supabase PIN check error, bypassing:', err)
+        await setUserName(pendingUserName, selectedModuleId || 'calidad')
+        handleClosePinModal()
+        handleCloseModal()
+        navigate(selectedModuleId === 'calidad' ? '/calidad' : `/${selectedModuleId || 'calidad'}`)
+      } finally {
+        setPinSubmitting(false)
+      }
+    }
+
+    const timer = setTimeout(verifyAndLogin, 250)
+    return () => clearTimeout(timer)
+  }, [pinDigits, pinFlowMode, targetPinCode, pendingUserName, selectedModuleId, tempCreatedPin, setUserName, navigate])
 
   // Open profile modal and pre-fill fields
   const handleOpenProfile = () => {
@@ -217,31 +346,73 @@ export function Hub() {
     }
   }
 
+  const handleInputChange = (val: string) => {
+    setInputName(val)
+    setErrorMsg('')
+    if (val.trim().length >= 1) {
+      const filtered = COLLABORATORS.filter(c => 
+        c.toLowerCase().includes(val.toLowerCase())
+      ).slice(0, 5)
+      setSuggestions(filtered)
+    } else {
+      setSuggestions([])
+    }
+  }
+
+  const handleSelectSuggestion = (name: string) => {
+    setInputName(name)
+    setSuggestions([])
+  }
+
   const handleSubmitName = async (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = inputName.trim()
     if (!trimmed) {
-      setErrorMsg('Por favor, ingresá tu nombre y apellido para comenzar.')
+      setErrorMsg('Por favor, seleccioná tu nombre de la lista.')
       return
     }
-    if (trimmed.length < 4) {
-      setErrorMsg('Ingresá tu nombre completo (mínimo 4 caracteres).')
+
+    const matchName = COLLABORATORS.find(c => c.toUpperCase() === trimmed.toUpperCase())
+    if (!matchName) {
+      setErrorMsg('Debes seleccionar un colaborador de la lista oficial.')
       return
     }
+
     setSubmitting(true)
     setErrorMsg('')
     try {
-      await setUserName(trimmed, selectedModuleId || 'calidad')
-      setShowModal(false)
-      const targetPath = selectedModuleId === 'calidad' ? '/calidad' : `/${selectedModuleId || 'calidad'}`
-      navigate(targetPath)
-    } catch (err: any) {
-      console.error(err)
-      if (err.message === 'ALREADY_REGISTERED') {
-        setErrorMsg('Trabajador ya registrado previamente, contacte el supervisor para solicitar una revision')
-      } else {
-        setErrorMsg('Ocurrió un error al verificar tu estado. Reintentá.')
+      // 1. Query Supabase for PIN code
+      const { data, error } = await supabase
+        .from('collaborator_pins')
+        .select('pin_code')
+        .eq('user_name', matchName)
+        .maybeSingle()
+
+      if (error && error.code !== 'PGRST116') {
+        // If there's an error (e.g. table doesn't exist yet or connection issue),
+        // we log it and fallback to bypass PIN for zero-friction
+        console.warn('Supabase pin query error, bypassing PIN auth:', error)
+        await setUserName(matchName, selectedModuleId || 'calidad')
+        setShowModal(false)
+        navigate(selectedModuleId === 'calidad' ? '/calidad' : `/${selectedModuleId || 'calidad'}`)
+        return
       }
+
+      setInputName(matchName) // normalize casing
+      setPendingUserName(matchName)
+
+      if (data && data.pin_code) {
+        setPinFlowMode('verify')
+        setTargetPinCode(data.pin_code)
+      } else {
+        setPinFlowMode('create')
+      }
+      setShowPinModal(true)
+    } catch (err) {
+      console.warn('Failed to contact Supabase for PIN auth, bypassing:', err)
+      await setUserName(matchName, selectedModuleId || 'calidad')
+      setShowModal(false)
+      navigate(selectedModuleId === 'calidad' ? '/calidad' : `/${selectedModuleId || 'calidad'}`)
     } finally {
       setSubmitting(false)
     }
@@ -431,15 +602,17 @@ export function Hub() {
             <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  Nombre y Apellido
+                  Nombre y Apellido (Oficial)
                 </label>
                 <input
                   type="text"
                   value={profileName}
-                  onChange={(e) => { setProfileName(e.target.value); setProfileError('') }}
-                  placeholder="Ej: Juan García"
-                  className="w-full bg-surface border border-surface-border focus:border-brand-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors"
+                  disabled
+                  className="w-full bg-surface/50 border border-surface-border/50 rounded-xl px-4 py-3 text-sm text-text-muted focus:outline-none cursor-not-allowed"
                 />
+                <span className="text-[10px] text-text-muted mt-1.5 block">
+                  Nombre registrado oficialmente en el roster.
+                </span>
               </div>
 
               <div>
@@ -455,6 +628,27 @@ export function Hub() {
                   autoFocus
                   className="w-full bg-surface border border-surface-border focus:border-brand-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors"
                 />
+              </div>
+
+              <div className="border-t border-surface-border/50 pt-4 mt-1">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                  Seguridad de la Cuenta
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingUserName(progress.userName || '')
+                    setPinFlowMode('create')
+                    setPinDigits([])
+                    setTempCreatedPin('')
+                    setPinError('')
+                    handleCloseProfile()
+                    setShowPinModal(true)
+                  }}
+                  className="w-full bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/30 hover:border-violet-500/50 text-violet-300 py-3 rounded-xl text-xs font-bold transition-all"
+                >
+                  🔒 Cambiar PIN de Acceso
+                </button>
               </div>
 
               {profileError && (
@@ -500,24 +694,37 @@ export function Hub() {
             </button>
             <h3 className="text-fluid-xl font-bold text-white mb-2">Registro del colaborador</h3>
             <p className="text-xs text-text-secondary mb-5 leading-relaxed">
-              Ingresá tu nombre y apellido completo para registrar tu participación. El supervisor monitoreará los resultados en el panel administrativo.
+              Buscá y seleccioná tu nombre de la lista para registrar tu participación.
             </p>
             <form onSubmit={handleSubmitName} className="flex flex-col gap-4">
-              <div>
+              <div className="relative">
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
                   Nombre y Apellido
                 </label>
                 <input
                   type="text"
                   value={inputName}
-                  onChange={(e) => {
-                    setInputName(e.target.value)
-                    setErrorMsg('')
-                  }}
-                  placeholder="Ingresar nombre y apellido"
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  placeholder="Escribí para buscar tu nombre..."
                   autoFocus
                   className="w-full bg-surface border border-surface-border focus:border-brand-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors"
                 />
+
+                {suggestions.length > 0 && (
+                  <div className="absolute left-0 right-0 mt-1 bg-surface-elevated border border-surface-border rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
+                    {suggestions.map((s, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSelectSuggestion(s)}
+                        className="w-full text-left px-4 py-3 text-sm text-text-secondary hover:text-white hover:bg-white/5 transition-colors border-b border-surface-border/50 last:border-b-0"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 {errorMsg && (
                   <p className="text-red-400 text-xs mt-2 font-medium">⚠️ {errorMsg}</p>
                 )}
@@ -532,6 +739,108 @@ export function Hub() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* PIN Keypad Modal */}
+      {showPinModal && createPortal(
+        <div
+          ref={pinOverlayRef}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            ref={pinCardRef}
+            className="bg-surface-card border border-surface-border rounded-2xl w-full max-w-xs p-6 shadow-glow relative text-center"
+          >
+            <button
+              onClick={handleClosePinModal}
+              className="absolute top-4 right-4 text-text-muted hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+
+            <div className="flex flex-col items-center gap-2 mb-6">
+              <span className="text-3xl">🔒</span>
+              <h3 className="text-lg font-black text-white">
+                {pinFlowMode === 'verify' 
+                  ? 'Ingresar PIN' 
+                  : pinFlowMode === 'create' 
+                  ? 'Crear PIN' 
+                  : 'Confirmar PIN'}
+              </h3>
+              <p className="text-xs text-text-muted">
+                {pinFlowMode === 'verify'
+                  ? `Ingresá tu PIN para ${pendingUserName}`
+                  : pinFlowMode === 'create'
+                  ? 'Definí un PIN de 4 dígitos para tu cuenta'
+                  : 'Ingresá el PIN nuevamente para confirmar'}
+              </p>
+              {(pinFlowMode === 'create' || pinFlowMode === 'confirm') && (
+                <div className="text-[10px] text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg leading-normal mt-2.5 max-w-[240px] mx-auto text-center font-medium">
+                  ⚠️ <strong>¡Importante!</strong> Anotá o recordá este PIN. Será obligatorio para ingresar la próxima vez.
+                </div>
+              )}
+            </div>
+
+            {/* PIN Dots Display */}
+            <div className="pin-dots-container flex justify-center gap-4 mb-8">
+              {[0, 1, 2, 3].map((idx) => (
+                <div
+                  key={idx}
+                  className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${
+                    pinDigits[idx] !== undefined
+                      ? 'bg-brand-500 border-brand-500 scale-110 shadow-[0_0_8px_rgba(var(--brand-500),0.5)]'
+                      : 'border-slate-500/40'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {pinError && (
+              <p className="text-red-400 text-xs font-semibold mb-6">⚠️ {pinError}</p>
+            )}
+
+            {/* Keypad Grid */}
+            <div className="grid grid-cols-3 gap-3 max-w-[240px] mx-auto">
+              {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => handleKeypress(num)}
+                  disabled={pinSubmitting}
+                  className="w-14 h-14 rounded-full bg-white/5 border border-slate-500/10 hover:border-brand-500/50 hover:bg-brand-500/10 active:scale-95 text-lg font-bold text-white transition-all flex items-center justify-center select-none"
+                >
+                  {num}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={handleClosePinModal}
+                disabled={pinSubmitting}
+                className="w-14 h-14 rounded-full bg-transparent text-text-muted hover:text-white transition-colors flex items-center justify-center text-xs font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => handleKeypress('0')}
+                disabled={pinSubmitting}
+                className="w-14 h-14 rounded-full bg-white/5 border border-slate-500/10 hover:border-brand-500/50 hover:bg-brand-500/10 active:scale-95 text-lg font-bold text-white transition-all flex items-center justify-center select-none"
+              >
+                0
+              </button>
+              <button
+                type="button"
+                onClick={() => handleKeypress('delete')}
+                disabled={pinSubmitting}
+                className="w-14 h-14 rounded-full bg-white/5 border border-slate-500/10 hover:border-red-500/50 hover:bg-red-500/10 active:scale-95 text-lg text-text-muted hover:text-red-400 transition-all flex items-center justify-center select-none"
+                title="Borrar"
+              >
+                ⌫
+              </button>
+            </div>
           </div>
         </div>,
         document.body

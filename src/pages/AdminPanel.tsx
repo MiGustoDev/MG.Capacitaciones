@@ -93,6 +93,9 @@ export function AdminPanel() {
     if (norm.includes('PROVEEDORES')) {
       return 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
     }
+    if (norm.includes('SISTEMAS')) {
+      return 'bg-violet-500/10 border-violet-500/20 text-violet-400'
+    }
     return 'bg-slate-500/10 border-slate-500/20 text-slate-400'
   }
 
@@ -103,6 +106,27 @@ export function AdminPanel() {
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
   const [signingIn, setSigningIn] = useState(false)
+
+  // Collaborator PINs
+  const [registeredPins, setRegisteredPins] = useState<string[]>([])
+
+  const handleResetPin = async (userName: string) => {
+    try {
+      const { error } = await supabase
+        .from('collaborator_pins')
+        .delete()
+        .eq('user_name', userName)
+
+      if (error) {
+        throw error
+      }
+
+      setRegisteredPins(prev => prev.filter(name => name !== userName))
+    } catch (err) {
+      console.error('Error resetting PIN:', err)
+      alert('Error al restablecer el PIN. Intente de nuevo.')
+    }
+  }
 
   // Custom Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -171,6 +195,18 @@ export function AdminPanel() {
         }))
         setParticipants(mapped)
         localStorage.setItem('bpm-capacitaciones-all-participants', JSON.stringify(mapped))
+      }
+
+      // Fetch registered PINs
+      try {
+        const { data: pinData } = await supabase
+          .from('collaborator_pins')
+          .select('user_name')
+        if (pinData) {
+          setRegisteredPins(pinData.map((p: any) => p.user_name))
+        }
+      } catch (pinErr) {
+        console.warn('Error loading collaborator PINs:', pinErr)
       }
     } catch (e) {
       console.error('Error al cargar desde Supabase, usando LocalStorage:', e)
@@ -760,9 +796,16 @@ export function AdminPanel() {
                           <span className="text-xs font-bold text-white truncate capitalize-none leading-tight">
                             {name}
                           </span>
-                          <span className={`inline-flex self-start items-center text-[9px] font-bold px-2 py-0.5 rounded-full border ${getSectorBadgeStyles(getSectorForUser(name))}`}>
-                            {getSectorForUser(name)}
-                          </span>
+                          <div className="flex flex-wrap gap-1 items-center">
+                            <span className={`inline-flex items-center text-[9px] font-bold px-2 py-0.5 rounded-full border ${getSectorBadgeStyles(getSectorForUser(name))}`}>
+                              {getSectorForUser(name)}
+                            </span>
+                            {registeredPins.includes(name) && (
+                              <span className="inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-violet-500/25 bg-violet-500/10 text-violet-400 gap-0.5" title="PIN de acceso configurado">
+                                🔒 PIN
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <button
@@ -1270,6 +1313,42 @@ export function AdminPanel() {
                   </div>
                 )
               })}
+            </div>
+
+            {/* PIN Settings Section */}
+            <div className="border-t border-surface-border/50 pt-4 mt-2">
+              <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">Seguridad / Acceso</h4>
+              <div className="bg-surface border border-surface-border/50 rounded-xl px-4 py-3.5 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{registeredPins.includes(selectedCollaborator) ? '🔒' : '🔓'}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-white truncate">
+                      {registeredPins.includes(selectedCollaborator) ? 'Acceso Protegido por PIN' : 'Sin PIN de Seguridad'}
+                    </p>
+                    <p className="text-[10px] text-text-muted mt-0.5 leading-normal">
+                      {registeredPins.includes(selectedCollaborator) 
+                        ? 'El colaborador debe ingresar su PIN para acceder en otros dispositivos.' 
+                        : 'El colaborador creará un PIN al ingresar por primera vez.'}
+                    </p>
+                  </div>
+                </div>
+                {registeredPins.includes(selectedCollaborator) && (
+                  <button
+                    onClick={() => {
+                      setConfirmModal({
+                        isOpen: true,
+                        title: '¿Restablecer PIN de seguridad?',
+                        message: `Esta acción eliminará el PIN de ${selectedCollaborator}. En su próximo inicio de sesión, el colaborador deberá crear un PIN nuevo.`,
+                        variant: 'danger',
+                        onConfirm: () => handleResetPin(selectedCollaborator),
+                      })
+                    }}
+                    className="px-3.5 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-xs font-bold transition-all flex-shrink-0"
+                  >
+                    Restablecer
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>,
