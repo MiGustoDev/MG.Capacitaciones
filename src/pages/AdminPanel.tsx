@@ -1395,90 +1395,265 @@ export function AdminPanel() {
         document.body
       )}
 
-      {/* Hidden Print Area */}
+      {/* Hidden Print Area - Official "Registro de Capacitación" format */}
       {createPortal(
         <div id="print-area" className="hidden">
           <style dangerouslySetInnerHTML={{ __html: `
             #print-area {
-              font-family: sans-serif !important;
-              padding: 40px !important;
-              color: #333 !important;
+              font-family: Arial, Helvetica, sans-serif !important;
+              padding: 28px 36px !important;
+              color: #111 !important;
               background-color: white !important;
+              width: 100% !important;
+              box-sizing: border-box !important;
             }
-            #print-area h1 {
-              font-size: 24px !important;
-              font-weight: bold !important;
-              margin-bottom: 5px !important;
-              margin-top: 0 !important;
+
+            /* ── HEADER ── */
+            #print-area .doc-header {
+              display: flex !important;
+              align-items: stretch !important;
+              border: 1.5px solid #333 !important;
+              margin-bottom: 0 !important;
+            }
+            #print-area .doc-header .logo-cell {
+              border-right: 1.5px solid #333 !important;
+              padding: 8px 14px !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              min-width: 130px !important;
+            }
+            #print-area .doc-header .logo-cell img {
+              height: 44px !important;
+              width: auto !important;
+              display: block !important;
+            }
+            #print-area .doc-header .title-cell {
+              flex: 1 !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              padding: 8px 12px !important;
+            }
+            #print-area .doc-header .title-cell h1 {
+              font-size: 18px !important;
+              font-weight: 900 !important;
+              letter-spacing: 1px !important;
+              margin: 0 !important;
+              text-align: center !important;
               color: #111 !important;
             }
-            #print-area .meta {
-              color: #666 !important;
-              margin-bottom: 20px !important;
-              font-size: 14px !important;
-              line-height: 1.5 !important;
+            #print-area .doc-header .code-cell {
+              border-left: 1.5px solid #333 !important;
+              display: flex !important;
+              flex-direction: column !important;
+              min-width: 130px !important;
+            }
+            #print-area .doc-header .code-cell .code-row {
+              flex: 1 !important;
+              padding: 5px 10px !important;
+              font-size: 9px !important;
+              font-weight: bold !important;
+              display: flex !important;
+              align-items: center !important;
+            }
+            #print-area .doc-header .code-cell .code-row:first-child {
+              border-bottom: 1px solid #333 !important;
+            }
+
+            /* ── INFO SECTION ── */
+            #print-area .info-section {
+              border: 1.5px solid #333 !important;
+              border-top: none !important;
+              padding: 10px 14px !important;
+              margin-bottom: 0 !important;
+            }
+            #print-area .info-section .info-row {
+              display: flex !important;
+              align-items: center !important;
+              min-height: 24px !important;
+              border-bottom: 1px solid #ccc !important;
+              padding: 5px 0 !important;
+              font-size: 11px !important;
+            }
+            #print-area .info-section .info-row:last-child {
+              border-bottom: none !important;
+            }
+            #print-area .info-section .info-label {
+              font-weight: bold !important;
+              min-width: 160px !important;
+              color: #111 !important;
+            }
+            #print-area .info-section .info-value {
+              flex: 1 !important;
+              color: #333 !important;
+            }
+
+            /* ── PARTICIPANTS TABLE ── */
+            #print-area .section-title {
+              text-align: center !important;
+              font-size: 13px !important;
+              font-weight: 900 !important;
+              letter-spacing: 2px !important;
+              padding: 7px !important;
+              border: 1.5px solid #333 !important;
+              border-top: none !important;
+              background: #f0f0f0 !important;
+              color: #111 !important;
+              margin: 0 !important;
             }
             #print-area table {
               width: 100% !important;
               border-collapse: collapse !important;
-              margin-top: 20px !important;
+              border: 1.5px solid #333 !important;
+              border-top: none !important;
+              font-size: 10px !important;
+            }
+            #print-area thead tr {
+              background-color: #f0f0f0 !important;
             }
             #print-area th {
-              background-color: #f5f5f5 !important;
-              padding: 12px 10px !important;
-              border-bottom: 2px solid #ddd !important;
+              padding: 7px 8px !important;
+              border: 1px solid #aaa !important;
               font-weight: bold !important;
-              color: #333 !important;
-            }
-            #print-area th.align-left, #print-area td.align-left {
-              text-align: left !important;
-            }
-            #print-area th.align-center, #print-area td.align-center {
+              color: #111 !important;
               text-align: center !important;
+              font-size: 10px !important;
+            }
+            #print-area th.col-name {
+              text-align: left !important;
+              width: 38% !important;
+            }
+            #print-area th.col-num {
+              width: 4% !important;
+              color: #aaa !important;
             }
             #print-area td {
-              padding: 10px !important;
-              border-bottom: 1px solid #ddd !important;
-              color: #444 !important;
+              padding: 6px 8px !important;
+              border: 1px solid #bbb !important;
+              color: #333 !important;
+              font-size: 10px !important;
+              min-height: 20px !important;
+            }
+            #print-area td.num-cell {
+              text-align: center !important;
+              color: #aaa !important;
+              font-size: 9px !important;
+            }
+            #print-area td.name-cell {
+              text-align: left !important;
+            }
+            #print-area td.center-cell {
+              text-align: center !important;
+            }
+            #print-area td.firma-cell {
+              min-width: 90px !important;
+            }
+
+            @media print {
+              #root { display: none !important; }
+              #print-area {
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important; top: 0 !important;
+                width: 100% !important;
+                padding: 24px !important;
+              }
             }
           `}} />
-          <div>
-            <h1>Reporte de Capacitación</h1>
-            <div className="meta">
-              <strong>Módulo:</strong> {TRAININGS.find(t => t.id === activeTab)?.title || activeTab} <br/>
-              <strong>Fecha de Reporte:</strong> {new Date().toLocaleString()} <br/>
-              <strong>Total Registrados:</strong> {activeParticipants.length}
-            </div>
-            <table>
-              <thead>
-                <tr>
-                  {visibleColumns.trabajador && <th className="align-left">Trabajador</th>}
-                  {visibleColumns.sector && <th className="align-center">Sector</th>}
-                  {visibleColumns.estado && <th className="align-center">Estado</th>}
-                  {visibleColumns.nota && <th className="align-center">Nota</th>}
-                  {visibleColumns.tiempo && <th className="align-center">Tiempo</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {activeParticipants.map((p) => {
-                  const isPassed = p.evaluationFailed === false
-                  const isFailed = p.evaluationFailed === true
-                  const status = isPassed ? 'Aprobado' : isFailed ? 'No Aprobado' : 'En curso'
-                  const score = p.evaluationScore !== undefined ? `${p.evaluationScore} / ${p.trainingId === 'armado' ? 22 : 15}` : '-'
-                  const time = formatDuration(p.startedAt, p.completedAt, p.lastUpdated)
-                  return (
-                    <tr key={p.userName}>
-                      {visibleColumns.trabajador && <td className="align-left">{p.userName}</td>}
-                      {visibleColumns.sector && <td className="align-center">{getSectorForUser(p.userName)}</td>}
-                      {visibleColumns.estado && <td className="align-center">{status}</td>}
-                      {visibleColumns.nota && <td className="align-center">{score}</td>}
-                      {visibleColumns.tiempo && <td className="align-center">{time}</td>}
+
+          {(() => {
+            const currentTraining = TRAININGS.find(t => t.id === activeTab)
+            const trainingTitle = currentTraining ? currentTraining.title : activeTab
+            const today = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+            const logoUrl = window.location.origin + '/logo-negro.png'
+
+            return (
+              <div>
+                {/* ── DOCUMENT HEADER ── */}
+                <div className="doc-header">
+                  <div className="logo-cell">
+                    <img src={logoUrl} alt="Mi Gusto Logo" />
+                  </div>
+                  <div className="title-cell">
+                    <h1>REGISTRO DE CAPACITACION</h1>
+                  </div>
+                  <div className="code-cell">
+                    <div className="code-row">CODIGO: PLA-R002</div>
+                    <div className="code-row">VERSION: 0</div>
+                  </div>
+                </div>
+
+                {/* ── INFO SECTION ── */}
+                <div className="info-section">
+                  <div className="info-row">
+                    <span className="info-label">Nombre de la Actividad:</span>
+                    <span className="info-value">{trainingTitle}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">Fecha:</span>
+                    <span className="info-value">{today}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="info-label">Entrenador:</span>
+                    <span className="info-value"></span>
+                  </div>
+                </div>
+
+                {/* ── PARTICIPANTS SECTION ── */}
+                <div className="section-title">PARTICIPANTES</div>
+
+                <table>
+                  <thead>
+                    <tr>
+                      <th className="col-num">#</th>
+                      {visibleColumns.trabajador && <th className="col-name" style={{ textAlign: 'left' }}>Apellido, Nombre</th>}
+                      {visibleColumns.legajo     && <th style={{ width: '10%' }}>Legajo</th>}
+                      {visibleColumns.sector     && <th style={{ width: '15%' }}>Sector</th>}
+                      {visibleColumns.estado     && <th style={{ width: '12%' }}>Estado</th>}
+                      {visibleColumns.nota       && <th style={{ width: '10%' }}>Nota</th>}
+                      {visibleColumns.tiempo     && <th style={{ width: '10%' }}>Tiempo</th>}
+                      {visibleColumns.firma      && <th style={{ width: '18%' }}>Firma</th>}
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody>
+                    {activeParticipants.map((p, idx) => {
+                      const isPassed = p.evaluationFailed === false
+                      const isFailed = p.evaluationFailed === true
+                      const status = isPassed ? 'Aprobado' : isFailed ? 'No Aprobado' : 'En curso'
+                      const score = p.evaluationScore !== undefined ? `${p.evaluationScore} / ${p.trainingId === 'armado' ? 22 : 15}` : '-'
+                      const time = formatDuration(p.startedAt, p.completedAt, p.lastUpdated)
+                      return (
+                        <tr key={p.userName}>
+                          <td className="num-cell">{idx + 1}</td>
+                          {visibleColumns.trabajador && <td className="name-cell">{p.userName}</td>}
+                          {visibleColumns.legajo     && <td className="center-cell"></td>}
+                          {visibleColumns.sector     && <td className="center-cell">{getSectorForUser(p.userName)}</td>}
+                          {visibleColumns.estado     && <td className="center-cell">{status}</td>}
+                          {visibleColumns.nota       && <td className="center-cell">{score}</td>}
+                          {visibleColumns.tiempo     && <td className="center-cell">{time}</td>}
+                          {visibleColumns.firma      && <td className="firma-cell"></td>}
+                        </tr>
+                      )
+                    })}
+                    {/* Pad with empty rows so there's always space to fill manually */}
+                    {Array.from({ length: Math.max(0, 5 - activeParticipants.length) }).map((_, i) => (
+                      <tr key={`empty-${i}`}>
+                        <td className="num-cell">{activeParticipants.length + i + 1}</td>
+                        {visibleColumns.trabajador && <td className="name-cell"></td>}
+                        {visibleColumns.legajo     && <td></td>}
+                        {visibleColumns.sector     && <td></td>}
+                        {visibleColumns.estado     && <td></td>}
+                        {visibleColumns.nota       && <td></td>}
+                        {visibleColumns.tiempo     && <td></td>}
+                        {visibleColumns.firma      && <td className="firma-cell"></td>}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          })()}
         </div>,
         document.body
       )}
