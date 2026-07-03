@@ -194,21 +194,50 @@ function normalize(str: string): string {
     .trim()
 }
 
+// Pre-build a normalized version of the map so lookups are fast and accent-proof
+const NORMALIZED_SECTOR_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(COLLABORATORS_SECTOR_MAP).map(([key, val]) => [normalize(key), val])
+)
+
 export function getSectorForUser(userName: string): string {
   const normName = normalize(userName)
-  
-  // Exact match
-  if (COLLABORATORS_SECTOR_MAP[normName]) {
-    return COLLABORATORS_SECTOR_MAP[normName]
+
+  // 1. Coincidencia exacta (normalizada)
+  if (NORMALIZED_SECTOR_MAP[normName]) {
+    return NORMALIZED_SECTOR_MAP[normName]
   }
 
-  // Fuzzy/Partial match
-  const keys = Object.keys(COLLABORATORS_SECTOR_MAP)
-  for (const key of keys) {
-    const normKey = normalize(key)
-    if (normName.includes(normKey) || normKey.includes(normName)) {
-      return COLLABORATORS_SECTOR_MAP[key]
+  // 2. Coincidencia por palabras (soporta orden invertido y nombres/apellidos parciales)
+  const userWords = normName.split(' ').filter(w => w.length > 1)
+  if (userWords.length === 0) return 'No asignado'
+
+  let bestMatchKey = ''
+  let bestMatchScore = 0
+
+  for (const key of Object.keys(NORMALIZED_SECTOR_MAP)) {
+    const keyWords = key.split(' ').filter(w => w.length > 1)
+    let score = 0
+
+    for (const uWord of userWords) {
+      for (const kWord of keyWords) {
+        if (uWord === kWord) {
+          score += 2 // Coincidencia exacta de palabra
+        } else if (uWord.includes(kWord) || kWord.includes(uWord)) {
+          score += 1 // Coincidencia parcial (ej. "Facu" en "Facundo")
+        }
+      }
     }
+
+    if (score > bestMatchScore) {
+      bestMatchScore = score
+      bestMatchKey = key
+    }
+  }
+
+  // Umbral mínimo de coincidencia para evitar falsos positivos
+  const threshold = userWords.length === 1 ? 1 : 2
+  if (bestMatchScore >= threshold && bestMatchKey) {
+    return NORMALIZED_SECTOR_MAP[bestMatchKey]
   }
 
   return 'No asignado'

@@ -419,7 +419,7 @@ export function AdminPanel() {
         const status = p.evaluationFailed === false
           ? 'Aprobado'
           : p.evaluationFailed === true
-          ? 'No Aprobado'
+          ? 'Desaprobado'
           : 'En curso'
         rowParts.push(`"${status}"`)
       }
@@ -844,7 +844,7 @@ export function AdminPanel() {
             <h3 className="text-2xl font-black text-brand-400 mt-1">{stats.passed}</h3>
           </div>
           <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-left">
-            <span className="text-xs text-red-300 font-semibold uppercase tracking-wider">No Aprobados</span>
+            <span className="text-xs text-red-300 font-semibold uppercase tracking-wider">Desaprobados</span>
             <h3 className="text-2xl font-black text-red-400 mt-1">{stats.failed}</h3>
           </div>
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-left">
@@ -908,13 +908,13 @@ export function AdminPanel() {
             <table className="w-full min-w-[600px] text-left border-collapse">
               <thead>
                 <tr className="bg-surface border-b border-surface-border text-xs text-text-muted uppercase font-bold tracking-wider">
-                  <th className="px-5 py-3.5">Trabajador</th>
-                  {visibleColumns.sector && <th className="px-5 py-3.5 text-center">Sector</th>}
-                  <th className="px-5 py-3.5 text-center">Estado</th>
-                  <th className="px-5 py-3.5 text-center">NOTA</th>
-                  <th className="px-5 py-3.5 text-center">Tiempo</th>
-                  <th className="px-5 py-3.5 text-center">Oportunidades</th>
-                  <th className="px-5 py-3.5 text-right">Acciones</th>
+                  <th className="px-4 py-3 whitespace-nowrap">Trabajador</th>
+                  {visibleColumns.sector && <th className="px-4 py-3 text-center whitespace-nowrap">Sector</th>}
+                  <th className="px-4 py-3 text-center whitespace-nowrap">Estado</th>
+                  <th className="px-4 py-3 text-center whitespace-nowrap">NOTA</th>
+                  <th className="px-4 py-3 text-center whitespace-nowrap">Tiempo</th>
+                  <th className="px-4 py-3 text-center whitespace-nowrap">Oportunidades</th>
+                  <th className="px-4 py-3 text-right whitespace-nowrap">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-border/40 text-sm">
@@ -940,26 +940,26 @@ export function AdminPanel() {
                     return (
                       <tr key={`${p.userName}-${p.trainingId}`} className="hover:bg-surface-elevated/20 transition-colors">
                         {/* Name */}
-                        <td className="px-5 py-4 font-bold text-white">
+                        <td className="px-4 py-3 font-bold text-white whitespace-nowrap">
                           {p.userName}
                         </td>
                         {/* Sector */}
                         {visibleColumns.sector && (
-                          <td className="px-5 py-4 text-center">
+                          <td className="px-4 py-3 text-center whitespace-nowrap">
                             <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border ${getSectorBadgeStyles(sector)}`}>
                               {sector}
                             </span>
                           </td>
                         )}
                         {/* Status badge */}
-                        <td className="px-5 py-4 text-center">
+                        <td className="px-4 py-3 text-center whitespace-nowrap">
                           {isPassed ? (
                             <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400">
                               🟢 APROBADO
                             </span>
                           ) : isFailed ? (
                             <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400">
-                              🔴 NO APROBADO
+                              🔴 DESAPROBADO
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400">
@@ -968,25 +968,25 @@ export function AdminPanel() {
                           )}
                         </td>
                         {/* Score */}
-                        <td className="px-5 py-4 text-center font-bold">
+                        <td className="px-4 py-3 text-center font-bold whitespace-nowrap">
                           {p.evaluationScore !== undefined ? (
                             <span className={isPassed ? 'text-brand-400' : 'text-red-400'}>
-                              {p.evaluationScore} / {p.trainingId === 'armado' ? 22 : 15}
+                              {p.evaluationScore}/{p.trainingId === 'armado' ? 22 : 15}
                             </span>
                           ) : (
                             <span className="text-text-muted">-</span>
                           )}
                         </td>
                         {/* Tiempo */}
-                        <td className="px-5 py-4 text-center text-xs text-text-secondary">
+                        <td className="px-4 py-3 text-center text-xs text-text-secondary whitespace-nowrap">
                           {formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}
                         </td>
                         {/* Oportunidades */}
-                        <td className="px-5 py-4 text-center">
+                        <td className="px-4 py-3 text-center whitespace-nowrap">
                           {isFailed && (
                             <button
                               onClick={() => handleReset(p.userName, p.trainingId)}
-                              className="text-xs bg-brand-600/10 hover:bg-brand-500/20 text-brand-300 border border-brand-500/30 px-3 py-1.5 rounded-lg transition-all font-bold"
+                              className="text-xs bg-brand-600/10 hover:bg-brand-500/20 text-brand-300 border border-brand-500/30 px-3 py-1.5 rounded-lg transition-all font-bold whitespace-nowrap"
                               title="Habilitar al trabajador a tomar el examen nuevamente"
                             >
                               🔄 Dar otra Oportunidad
@@ -994,7 +994,7 @@ export function AdminPanel() {
                           )}
                         </td>
                         {/* Actions */}
-                        <td className="px-5 py-4 text-right">
+                        <td className="px-4 py-3 text-right whitespace-nowrap">
                           <button
                             onClick={() => handleDeleteRecord(p.userName, p.trainingId)}
                             className="text-sm p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-all flex items-center justify-center ml-auto"
@@ -1048,7 +1048,7 @@ export function AdminPanel() {
                           </span>
                         ) : isFailed ? (
                           <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400">
-                            🔴 NO APROBADO
+                            🔴 DESAPROBADO
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400">
@@ -1165,7 +1165,7 @@ export function AdminPanel() {
                   {activeParticipants.map((p) => {
                     const isPassed = p.evaluationFailed === false
                     const isFailed = p.evaluationFailed === true
-                    const status = isPassed ? 'Aprobado' : isFailed ? 'No Aprobado' : 'En curso'
+                    const status = isPassed ? 'Aprobado' : isFailed ? 'Desaprobado' : 'En curso'
                     const score = p.evaluationScore !== undefined ? `${p.evaluationScore}/${p.trainingId === 'armado' ? 22 : 15}` : '-'
                     return (
                       <tr key={p.userName} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
@@ -1298,7 +1298,7 @@ export function AdminPanel() {
                       </span>
                     ) : isFailed ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400">
-                        🔴 No Aprobado
+                        🔴 Desaprobado
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400">
@@ -1620,7 +1620,7 @@ export function AdminPanel() {
                     {activeParticipants.map((p, idx) => {
                       const isPassed = p.evaluationFailed === false
                       const isFailed = p.evaluationFailed === true
-                      const status = isPassed ? 'Aprobado' : isFailed ? 'No Aprobado' : 'En curso'
+                      const status = isPassed ? 'Aprobado' : isFailed ? 'Desaprobado' : 'En curso'
                       const score = p.evaluationScore !== undefined ? `${p.evaluationScore} / ${p.trainingId === 'armado' ? 22 : 15}` : '-'
                       const time = formatDuration(p.startedAt, p.completedAt, p.lastUpdated)
                       return (
