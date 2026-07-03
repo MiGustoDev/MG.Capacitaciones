@@ -55,10 +55,12 @@ export function AdminPanel() {
   const [isExportPreviewOpen, setIsExportPreviewOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState({
     trabajador: true,
+    legajo: true,
     sector: true,
     estado: true,
     nota: true,
-    tiempo: true
+    tiempo: true,
+    firma: true
   })
 
   const getSectorBadgeStyles = (sector: string) => {
@@ -1101,73 +1103,62 @@ export function AdminPanel() {
 
       {/* Export Preview Modal */}
       {isExportPreviewOpen && createPortal(
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-gray-200 rounded-3xl w-full max-w-2xl p-6 sm:p-8 shadow-2xl relative animate-scale-in flex flex-col max-h-[85vh]">
-            <h3 className="text-xl font-bold text-gray-400 mb-1">Vista Previa del Reporte</h3>
-            <p className="text-xs text-gray-700 mb-4">
-              Módulo seleccionado: <strong className="text-brand-600 font-extrabold">{TRAININGS.find(t => t.id === activeTab)?.title || activeTab}</strong>
-            </p>
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-card border border-surface-border rounded-2xl w-full max-w-3xl p-6 shadow-glow animate-scale-in flex flex-col max-h-[90vh]">
 
-            {/* Column Toggles */}
-            <div className="flex flex-wrap gap-4 items-center mb-6 bg-white py-2.5 px-4 rounded-full border border-gray-200 text-xs">
-              <span className="text-gray-800 font-bold mr-1">Columnas:</span>
-              <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
-                <input
-                  type="checkbox"
-                  checked={visibleColumns.trabajador}
-                  onChange={(e) => setVisibleColumns(prev => ({ ...prev, trabajador: e.target.checked }))}
-                  className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
-                />
-                Trabajador
-              </label>
-              <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
-                <input
-                  type="checkbox"
-                  checked={visibleColumns.sector}
-                  onChange={(e) => setVisibleColumns(prev => ({ ...prev, sector: e.target.checked }))}
-                  className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
-                />
-                Sector
-              </label>
-              <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
-                <input
-                  type="checkbox"
-                  checked={visibleColumns.estado}
-                  onChange={(e) => setVisibleColumns(prev => ({ ...prev, estado: e.target.checked }))}
-                  className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
-                />
-                Estado
-              </label>
-              <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
-                <input
-                  type="checkbox"
-                  checked={visibleColumns.nota}
-                  onChange={(e) => setVisibleColumns(prev => ({ ...prev, nota: e.target.checked }))}
-                  className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
-                />
-                Nota
-              </label>
-              <label className="flex items-center gap-1.5 cursor-pointer text-gray-400 font-medium">
-                <input
-                  type="checkbox"
-                  checked={visibleColumns.tiempo}
-                  onChange={(e) => setVisibleColumns(prev => ({ ...prev, tiempo: e.target.checked }))}
-                  className="rounded border-gray-300 text-brand-600 focus:ring-0 focus:ring-offset-0 bg-white"
-                />
-                Tiempo
-              </label>
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <p className="text-[10px] text-brand-400 font-extrabold uppercase tracking-widest mb-1">Exportar Reporte</p>
+                <h3 className="text-xl font-black text-white">Vista Previa del Reporte</h3>
+                <p className="text-xs text-text-muted mt-1">
+                  Módulo: <strong className="text-brand-400 font-extrabold">{TRAININGS.find(t => t.id === activeTab)?.title || activeTab}</strong>
+                </p>
+              </div>
+              <button
+                onClick={() => setIsExportPreviewOpen(false)}
+                className="flex-shrink-0 p-2 bg-surface hover:bg-surface-elevated border border-surface-border rounded-xl text-text-muted hover:text-white transition-colors"
+              >
+                ✕
+              </button>
             </div>
 
-            {/* Table Preview */}
-            <div className="flex-1 overflow-y-auto border border-gray-200 rounded-2xl bg-white mb-6 scrollbar-thin">
+            {/* Column Toggles */}
+            <div className="flex flex-wrap gap-x-5 gap-y-2.5 items-center mb-5 bg-surface border border-surface-border/60 py-3 px-4 rounded-xl text-xs">
+              <span className="text-text-muted font-bold uppercase tracking-wider text-[10px]">Columnas:</span>
+              {([
+                { key: 'trabajador', label: 'Colaborador' },
+                { key: 'legajo',     label: 'Legajo' },
+                { key: 'sector',     label: 'Sector' },
+                { key: 'estado',     label: 'Estado' },
+                { key: 'nota',       label: 'Nota' },
+                { key: 'tiempo',     label: 'Tiempo' },
+                { key: 'firma',      label: 'Firma' },
+              ] as { key: keyof typeof visibleColumns; label: string }[]).map(({ key, label }) => (
+                <label key={key} className="flex items-center gap-1.5 cursor-pointer text-text-secondary hover:text-white font-medium transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={visibleColumns[key]}
+                    onChange={(e) => setVisibleColumns(prev => ({ ...prev, [key]: e.target.checked }))}
+                    className="w-3.5 h-3.5 rounded border-surface-border bg-surface accent-brand-500 cursor-pointer"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+
+            {/* Table Preview — keeps light colors for print */}
+            <div className="flex-1 overflow-y-auto border border-gray-200 rounded-xl bg-white mb-5 scrollbar-thin">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-gray-200 text-gray-700 uppercase font-bold bg-slate-50">
-                    {visibleColumns.trabajador && <th className="px-5 py-4 text-left font-bold tracking-wider">TRABAJADOR</th>}
-                    {visibleColumns.sector && <th className="px-5 py-4 text-center font-bold tracking-wider">SECTOR</th>}
-                    {visibleColumns.estado && <th className="px-5 py-4 text-center font-bold tracking-wider">ESTADO</th>}
-                    {visibleColumns.nota && <th className="px-5 py-4 text-center font-bold tracking-wider">NOTA</th>}
-                    {visibleColumns.tiempo && <th className="px-5 py-4 text-center font-bold tracking-wider">TIEMPO</th>}
+                  <tr className="border-b border-gray-200 text-gray-600 uppercase font-bold bg-slate-50">
+                    {visibleColumns.trabajador && <th className="px-4 py-3.5 text-left font-bold tracking-wider">Colaborador</th>}
+                    {visibleColumns.legajo     && <th className="px-4 py-3.5 text-center font-bold tracking-wider">Legajo</th>}
+                    {visibleColumns.sector     && <th className="px-4 py-3.5 text-center font-bold tracking-wider">Sector</th>}
+                    {visibleColumns.estado     && <th className="px-4 py-3.5 text-center font-bold tracking-wider">Estado</th>}
+                    {visibleColumns.nota       && <th className="px-4 py-3.5 text-center font-bold tracking-wider">Nota</th>}
+                    {visibleColumns.tiempo     && <th className="px-4 py-3.5 text-center font-bold tracking-wider">Tiempo</th>}
+                    {visibleColumns.firma      && <th className="px-4 py-3.5 text-center font-bold tracking-wider">Firma</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-gray-700">
@@ -1178,11 +1169,13 @@ export function AdminPanel() {
                     const score = p.evaluationScore !== undefined ? `${p.evaluationScore}/${p.trainingId === 'armado' ? 22 : 15}` : '-'
                     return (
                       <tr key={p.userName} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                        {visibleColumns.trabajador && <td className="px-5 py-4 text-left font-normal text-gray-400">{p.userName}</td>}
-                        {visibleColumns.sector && <td className="px-5 py-4 text-center font-medium text-gray-400">{getSectorForUser(p.userName)}</td>}
-                        {visibleColumns.estado && <td className="px-5 py-4 text-center font-medium">{status}</td>}
-                        {visibleColumns.nota && <td className="px-5 py-4 text-center font-medium">{score}</td>}
-                        {visibleColumns.tiempo && <td className="px-5 py-4 text-center font-medium">{formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}</td>}
+                        {visibleColumns.trabajador && <td className="px-4 py-3.5 text-left font-normal text-gray-500">{p.userName}</td>}
+                        {visibleColumns.legajo     && <td className="px-4 py-3.5 text-center text-gray-300"></td>}
+                        {visibleColumns.sector     && <td className="px-4 py-3.5 text-center font-medium text-gray-500">{getSectorForUser(p.userName)}</td>}
+                        {visibleColumns.estado     && <td className="px-4 py-3.5 text-center font-medium text-gray-600">{status}</td>}
+                        {visibleColumns.nota       && <td className="px-4 py-3.5 text-center font-medium text-gray-600">{score}</td>}
+                        {visibleColumns.tiempo     && <td className="px-4 py-3.5 text-center font-medium text-gray-500">{formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}</td>}
+                        {visibleColumns.firma      && <td className="px-4 py-3.5 text-center text-gray-300"></td>}
                       </tr>
                     )
                   })}
@@ -1191,20 +1184,14 @@ export function AdminPanel() {
             </div>
 
             {/* Modal Actions */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={() => setIsExportPreviewOpen(false)}
-                className="order-last sm:order-first flex-1 bg-white border border-slate-700 hover:bg-slate-50 text-slate-700 py-3 rounded-full text-xs font-bold transition-all text-center"
-              >
-                Cerrar
-              </button>
-              <div className="flex-1 flex gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex gap-2.5">
                 <button
                   onClick={() => {
                     handleExportCSV();
                     setIsExportPreviewOpen(false);
                   }}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-white hover:bg-green-50/50 text-green-700 border border-green-200 hover:border-green-300 py-3 rounded-full text-xs font-bold transition-all"
+                  className="flex items-center gap-1.5 bg-brand-600/10 hover:bg-brand-500/20 text-brand-300 border border-brand-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-all"
                 >
                   📄 CSV
                 </button>
@@ -1213,7 +1200,7 @@ export function AdminPanel() {
                     handleDownloadPDF();
                     setIsExportPreviewOpen(false);
                   }}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-white hover:bg-blue-50/50 text-blue-700 border border-blue-200 hover:border-blue-300 py-3 rounded-full text-xs font-bold transition-all"
+                  className="flex items-center gap-1.5 bg-blue-600/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-all"
                 >
                   📕 PDF
                 </button>
@@ -1222,11 +1209,17 @@ export function AdminPanel() {
                     handlePrint();
                     setIsExportPreviewOpen(false);
                   }}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-white hover:bg-amber-50/50 text-amber-700 border border-amber-200 hover:border-amber-300 py-3 rounded-full text-xs font-bold transition-all"
+                  className="flex items-center gap-1.5 bg-amber-600/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-4 py-2.5 rounded-xl text-xs font-bold transition-all"
                 >
                   🖨️ Imprimir
                 </button>
               </div>
+              <button
+                onClick={() => setIsExportPreviewOpen(false)}
+                className="bg-surface hover:bg-surface-elevated border border-surface-border text-text-secondary hover:text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all"
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>,
