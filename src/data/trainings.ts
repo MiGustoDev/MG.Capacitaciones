@@ -13,8 +13,8 @@ export interface Training {
 export const TRAININGS: Training[] = [
   {
     id: 'calidad',
-    title: 'Sanidad',
-    shortTitle: 'Sanidad',
+    title: 'BPM',
+    shortTitle: 'BPM',
     icon: '🧼',
     active: true,
     tagline: 'Obligatorio y Disponible',

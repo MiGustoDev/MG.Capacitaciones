@@ -1566,7 +1566,7 @@ export function AdminPanel() {
             const currentTraining = TRAININGS.find(t => t.id === activeTab)
             const trainingTitle = currentTraining ? currentTraining.title : activeTab
             const today = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-            const logoUrl = window.location.origin + '/logo-negro.png'
+            const logoUrl = getAssetUrl('/logo-negro.png')
 
             return (
               <div>
