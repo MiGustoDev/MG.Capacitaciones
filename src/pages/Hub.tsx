@@ -615,20 +615,7 @@ export function Hub() {
                 </span>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  Número de Legajo
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={profileLegajo}
-                  onChange={(e) => { setProfileLegajo(e.target.value); setProfileError('') }}
-                  placeholder="Ej: 00142"
-                  autoFocus
-                  className="w-full bg-surface border border-surface-border focus:border-brand-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-colors"
-                />
-              </div>
+
 
               <div className="border-t border-surface-border/50 pt-4 mt-1">
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">

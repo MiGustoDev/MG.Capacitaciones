@@ -911,6 +911,7 @@ export function AdminPanel() {
                   <th className="px-5 py-3.5 text-center">Estado</th>
                   <th className="px-5 py-3.5 text-center">NOTA</th>
                   <th className="px-5 py-3.5 text-center">Tiempo</th>
+                  <th className="px-5 py-3.5 text-center">Oportunidades</th>
                   <th className="px-5 py-3.5 text-right">Acciones</th>
                 </tr>
               </thead>
@@ -978,26 +979,27 @@ export function AdminPanel() {
                         <td className="px-5 py-4 text-center text-xs text-text-secondary">
                           {formatDuration(p.startedAt, p.completedAt, p.lastUpdated)}
                         </td>
+                        {/* Oportunidades */}
+                        <td className="px-5 py-4 text-center">
+                          {isFailed && (
+                            <button
+                              onClick={() => handleReset(p.userName, p.trainingId)}
+                              className="text-xs bg-brand-600/10 hover:bg-brand-500/20 text-brand-300 border border-brand-500/30 px-3 py-1.5 rounded-lg transition-all font-bold"
+                              title="Habilitar al trabajador a tomar el examen nuevamente"
+                            >
+                              🔄 Dar otra Oportunidad
+                            </button>
+                          )}
+                        </td>
                         {/* Actions */}
                         <td className="px-5 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            {isFailed && (
-                              <button
-                                onClick={() => handleReset(p.userName, p.trainingId)}
-                                className="text-xs bg-brand-600/10 hover:bg-brand-500/20 text-brand-300 border border-brand-500/30 px-3 py-1.5 rounded-lg transition-all font-bold"
-                                title="Habilitar al trabajador a tomar el examen nuevamente"
-                              >
-                                🔄 Dar otra Oportunidad
-                              </button>
-                            )}
-                            <button
-                              onClick={() => handleDeleteRecord(p.userName, p.trainingId)}
-                              className="text-sm p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-all flex items-center justify-center"
-                              title="Borrar registro completo de este trabajador"
-                            >
-                              🗑️
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => handleDeleteRecord(p.userName, p.trainingId)}
+                            className="text-sm p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-all flex items-center justify-center ml-auto"
+                            title="Borrar registro completo de este trabajador"
+                          >
+                            🗑️
+                          </button>
                         </td>
                       </tr>
                     )
