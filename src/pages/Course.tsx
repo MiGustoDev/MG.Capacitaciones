@@ -19,6 +19,9 @@ export function Course() {
   const module = courseData.modules.find(m => m.id === progress.currentModuleId)
   const lesson = module?.lessons.find(l => l.id === progress.currentLessonId)
 
+  const elapsed = progress.startedAt ? (Date.now() - new Date(progress.startedAt).getTime()) : 0
+  const isTimeOut = progress.evaluationFailed === true && elapsed >= 40 * 60 * 1000
+
   // If no valid state found or accessing final lesson without passing the exam, redirect
   useEffect(() => {
     if (!progress.userName) {
@@ -29,13 +32,23 @@ export function Course() {
       guardNavigate('/')
       return
     }
+
+    // Redirect to evaluation if timed out
+    if (isTimeOut && lesson.id !== 'evaluacion-test') {
+      const evalModule = courseData.modules.find(m => m.lessons.some(l => l.id === 'evaluacion-test'))
+      if (evalModule) {
+        goToLesson(evalModule.id, 'evaluacion-test')
+      }
+      return
+    }
+
     if (lesson.id === 'cierre-equipo' && !isLessonCompleted('evaluacion-test') && progress.evaluationFailed !== false) {
       const evalModule = courseData.modules.find(m => m.lessons.some(l => l.id === 'evaluacion-test'))
       if (evalModule) {
         goToLesson(evalModule.id, 'evaluacion-test')
       }
     }
-  }, [progress.userName, module, lesson, guardNavigate, isLessonCompleted, goToLesson, courseData, progress.evaluationFailed])
+  }, [progress.userName, module, lesson, guardNavigate, isLessonCompleted, goToLesson, courseData, progress.evaluationFailed, isTimeOut])
 
   // Slide transition animation when lesson changes
   const lessonKey = `${progress.currentModuleId}-${progress.currentLessonId}`

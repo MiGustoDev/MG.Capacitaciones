@@ -51,6 +51,10 @@ export function EvaluationSlide() {
   const [examEndTime, setExamEndTime] = useState<number | null>(null)
   const [examTimeLeft, setExamTimeLeft] = useState<number>(1200)
 
+  const courseRemaining = Math.max(0, (40 * 60 * 1000) - (progress.startedAt ? (Date.now() - new Date(progress.startedAt).getTime()) : 0))
+  const courseRemainingMinutes = Math.ceil(courseRemaining / (60 * 1000))
+  const displayLimitMinutes = Math.max(0, Math.min(20, courseRemainingMinutes))
+
   const flat = getFlatLessons(courseData)
   const requiredLessons = flat.filter(l => l.id !== 'evaluacion-test' && l.id !== 'cierre-equipo')
   const completedRequired = requiredLessons.filter(l => isLessonCompleted(l.id)).length
@@ -132,6 +136,11 @@ export function EvaluationSlide() {
   const scoreToDisplay = alreadyFailed ? (progress.evaluationScore ?? 0) : correctCount
   const isPassedToDisplay = alreadyFailed ? false : passed
 
+  const startMs = progress.startedAt ? new Date(progress.startedAt).getTime() : 0
+  const lastMs = progress.completedAt ? new Date(progress.completedAt).getTime() : Date.now()
+  const totalDurationMs = lastMs - startMs
+  const isTimeOut = !isPassedToDisplay && progress.evaluationFailed === true && totalDurationMs >= 40 * 60 * 1000
+
   // Si ya estaba aprobado, podemos ofrecer saltar o ver resultados
   const alreadyCompleted = isLessonCompleted('evaluacion-test')
 
@@ -179,6 +188,15 @@ export function EvaluationSlide() {
           if (!endTime && parsed.examTimeLeft !== undefined) {
             endTime = Date.now() + parsed.examTimeLeft * 1000
           }
+          
+          // Cap end time at course remaining time
+          if (endTime && progress.startedAt) {
+            const courseRemainingEndTime = new Date(progress.startedAt).getTime() + (40 * 60 * 1000)
+            if (endTime > courseRemainingEndTime) {
+              endTime = courseRemainingEndTime
+            }
+          }
+          
           setExamEndTime(endTime || null)
           
           setIsEvaluationActive(parsed.isEvaluationActive ?? false)
@@ -188,7 +206,7 @@ export function EvaluationSlide() {
         console.error('Error loading exam state:', e)
       }
     }
-  }, [progress.trainingId, progress.userName, setIsEvaluationActive])
+  }, [progress.trainingId, progress.userName, progress.startedAt, setIsEvaluationActive])
 
   // Save exam state on changes
   useEffect(() => {
@@ -247,9 +265,15 @@ export function EvaluationSlide() {
       }
     })
     setShuffledQuestions(shuffled)
-    const endTime = Date.now() + 20 * 60 * 1000
+    
+    // Cap exam timer at remaining course time
+    const courseRemainingMs = Math.max(0, (40 * 60 * 1000) - (progress.startedAt ? (Date.now() - new Date(progress.startedAt).getTime()) : 0))
+    const examLimitMs = 20 * 60 * 1000
+    const finalDurationMs = Math.min(examLimitMs, courseRemainingMs)
+    
+    const endTime = Date.now() + finalDurationMs
     setExamEndTime(endTime)
-    setExamTimeLeft(1200)
+    setExamTimeLeft(Math.ceil(finalDurationMs / 1000))
 
     transitionTo('quiz', () => {
       setAnswers({})
@@ -336,14 +360,16 @@ export function EvaluationSlide() {
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-text-muted">Tiempo límite:</span>
-              <span className="text-brand-400 font-bold">20 minutos (máximo)</span>
+              <span className="text-brand-400 font-bold">
+                {displayLimitMinutes === 20 ? '20 minutos (máximo)' : `${displayLimitMinutes} minutos (restantes de la capacitación)`}
+              </span>
             </div>
           </div>
 
           <div className="w-full max-w-md bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs px-4 py-3 rounded-xl flex items-start gap-2.5 text-left leading-relaxed">
             <span className="text-lg">⚠️</span>
             <span>
-              <strong>Aviso importante:</strong> Una vez iniciada la evaluación, <strong>no podrás salir de ella, cerrar el menú ni navegar por otros contenidos</strong> hasta que la completes de corrido. Tendrás un máximo de <strong>20 minutos</strong>; de lo contrario, se entregará de forma automática.
+              <strong>Aviso importante:</strong> Una vez iniciada la evaluación, <strong>no podrás salir de ella, cerrar el menú ni navegar por otros contenidos</strong> hasta que la completes de corrido. Tendrás un máximo de <strong>{displayLimitMinutes} minutos</strong>; de lo contrario, se entregará de forma automática.
             </span>
           </div>
 
@@ -506,7 +532,9 @@ export function EvaluationSlide() {
               <p className="text-text-secondary text-sm max-w-md mx-auto px-4 leading-relaxed">
                 {isPassedToDisplay
                   ? `Has demostrado conocimientos sólidos sobre ${courseData.title} en Mi Gusto.`
-                  : 'No has alcanzado la calificación mínima requerida. Te recomendamos revisar el contenido y solicitar a tu supervisor una oportunidad para volver a intentarlo.'
+                  : isTimeOut
+                    ? 'Se ha agotado el tiempo límite de 40 minutos para realizar la capacitación. Solicitá a tu supervisor una oportunidad para reiniciar.'
+                    : 'No has alcanzado la calificación mínima requerida. Te recomendamos revisar el contenido y solicitar a tu supervisor una oportunidad para volver a intentarlo.'
                 }
               </p>
             </div>

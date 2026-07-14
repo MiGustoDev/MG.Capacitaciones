@@ -93,13 +93,40 @@ interface TopBarProps {
   onMenuToggle: () => void
 }
 
+function formatTopBarTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
+
 export function TopBar({ currentModuleId, currentLessonId, onMenuToggle }: TopBarProps) {
-  const { courseData } = useCourse()
+  const { courseData, progress } = useCourse()
   const module = courseData.modules.find(m => m.id === currentModuleId)
   const lesson = module?.lessons.find(l => l.id === currentLessonId)
 
   const moduleIndex = courseData.modules.findIndex(m => m.id === currentModuleId)
   const lessonIndex = module?.lessons.findIndex(l => l.id === currentLessonId) ?? 0
+
+  const [timeLeft, setTimeLeft] = useState<number>(0)
+
+  useEffect(() => {
+    const startedAtVal = progress.startedAt
+    if (!startedAtVal || progress.completedAt || progress.evaluationFailed === false) {
+      setTimeLeft(0)
+      return
+    }
+
+    const updateTimer = () => {
+      const limit = 40 * 60 * 1000
+      const elapsed = Date.now() - new Date(startedAtVal).getTime()
+      const remaining = Math.max(0, Math.ceil((limit - elapsed) / 1000))
+      setTimeLeft(remaining)
+    }
+
+    updateTimer()
+    const interval = setInterval(updateTimer, 1000)
+    return () => clearInterval(interval)
+  }, [progress.startedAt, progress.completedAt, progress.evaluationFailed])
 
   return (
     <header className="flex items-center gap-4 px-4 md:px-6 py-3 border-b border-surface-border bg-surface-card/80 backdrop-blur-sm">
@@ -135,6 +162,23 @@ export function TopBar({ currentModuleId, currentLessonId, onMenuToggle }: TopBa
           {lesson?.title}
         </p>
       </div>
+
+      {/* Session Countdown Timer */}
+      {timeLeft > 0 && (
+        <div
+          className={`px-2.5 py-1.5 rounded-lg border font-mono text-xs font-bold flex items-center gap-1.5 transition-all select-none
+            ${timeLeft < 180
+              ? 'bg-red-500/10 border-red-500/30 text-red-400 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.2)]'
+              : timeLeft < 600
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                : 'bg-surface-elevated border-surface-border text-text-primary'
+            }`}
+          title="Tiempo restante para completar la capacitación y evaluación"
+        >
+          <span>⏱️</span>
+          <span>{formatTopBarTime(timeLeft)}</span>
+        </div>
+      )}
 
       {/* Mi Gusto logo */}
       <img
