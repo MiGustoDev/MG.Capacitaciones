@@ -471,6 +471,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
         if (index >= 0) {
           list[index].evaluationFailed = undefined
           list[index].evaluationScore = undefined
+          list[index].startedAt = new Date().toISOString()
           localStorage.setItem('bpm-capacitaciones-all-participants', JSON.stringify(list))
         }
       }
@@ -484,6 +485,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
       .update({
         evaluation_score: null,
         evaluation_failed: null,
+        started_at: new Date().toISOString(),
         last_updated: new Date().toISOString(),
       })
       .eq('user_name', targetName)
@@ -504,6 +506,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
           if (parsed.userName === targetName) {
             parsed.evaluationFailed = undefined
             parsed.evaluationScore = undefined
+            parsed.startedAt = new Date().toISOString()
             localStorage.setItem(`bpm-mi-gusto-progress_${trainingId}`, JSON.stringify(parsed))
           }
         }
@@ -514,6 +517,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
           ...prev,
           evaluationFailed: undefined,
           evaluationScore: undefined,
+          startedAt: new Date().toISOString(),
         }
       }
       return prev
@@ -608,6 +612,32 @@ export function CourseProvider({ children }: { children: ReactNode }) {
       syncProgressWithDatabase()
     }
   }, [progress.userName, progress.trainingId, syncProgressWithDatabase])
+
+  // Track total 40-minute limit for the entire training (lessons + exam)
+  useEffect(() => {
+    if (!progress.userName || progress.completedAt || progress.evaluationFailed === false) return
+
+    const checkTimeout = () => {
+      if (!progress.startedAt) return
+      const elapsed = Date.now() - new Date(progress.startedAt).getTime()
+      const LIMIT_MS = 40 * 60 * 1000 // 40 minutes
+      
+      if (elapsed >= LIMIT_MS) {
+        setProgress(prev => {
+          if (prev.evaluationFailed === true) return prev // already marked failed
+          return {
+            ...prev,
+            evaluationFailed: true,
+            evaluationScore: prev.evaluationScore ?? 0,
+          }
+        })
+      }
+    }
+
+    checkTimeout()
+    const interval = setInterval(checkTimeout, 5000) // check every 5 seconds
+    return () => clearInterval(interval)
+  }, [progress.userName, progress.startedAt, progress.completedAt, progress.evaluationFailed])
 
   const updateUserName = useCallback(async (oldName: string, newName: string) => {
     if (!newName || newName.trim() === oldName.trim()) return

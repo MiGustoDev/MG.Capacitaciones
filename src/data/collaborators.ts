@@ -108,5 +108,8 @@ export const COLLABORATORS: string[] = [
   "TIAGO GODOY",
   "RODRIGO SANDOBAL",
   "JUAN AGUIRRE",
+  "RICARDO MARTINEZ",
+  "RAMIRO SAGA",
+  "JUAN SILVA",
   "TEST",
 ]

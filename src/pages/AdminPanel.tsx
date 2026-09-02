@@ -53,6 +53,7 @@ export function AdminPanel() {
   const [isModalClosing, setIsModalClosing] = useState(false)
   const [collaboratorSearch, setCollaboratorSearch] = useState('')
   const [isExportPreviewOpen, setIsExportPreviewOpen] = useState(false)
+  const [selectedUserNames, setSelectedUserNames] = useState<string[]>([])
   const [visibleColumns, setVisibleColumns] = useState({
     trabajador: true,
     legajo: true,
@@ -258,6 +259,18 @@ export function AdminPanel() {
     return participants.filter(p => p.trainingId === activeTab)
   }, [participants, activeTab])
 
+  // Initialize selectedUserNames when the modal is opened
+  useEffect(() => {
+    if (isExportPreviewOpen) {
+      setSelectedUserNames(activeParticipants.map(p => p.userName))
+    }
+  }, [isExportPreviewOpen, activeParticipants])
+
+  // Filter selected participants for export/printing
+  const exportedParticipants = useMemo(() => {
+    return activeParticipants.filter(p => selectedUserNames.includes(p.userName))
+  }, [activeParticipants, selectedUserNames])
+
   // Stats calculations based on active tab
   const stats = useMemo(() => {
     const total = activeParticipants.length
@@ -393,7 +406,7 @@ export function AdminPanel() {
 
   // Export to CSV
   const handleExportCSV = () => {
-    if (activeParticipants.length === 0) return
+    if (exportedParticipants.length === 0) return
     const currentTraining = TRAININGS.find(t => t.id === activeTab)
     const trainingTitle = currentTraining ? currentTraining.title : activeTab
 
@@ -408,7 +421,7 @@ export function AdminPanel() {
 
     const headers = headerParts.join(';') + '\n'
 
-    const rows = activeParticipants.map(p => {
+    const rows = exportedParticipants.map(p => {
       const rowParts: string[] = []
       
       if (visibleColumns.trabajador) rowParts.push(`"${p.userName}"`)
@@ -454,12 +467,12 @@ export function AdminPanel() {
 
   // Print/PDF Handler
   const handlePrint = () => {
-    if (activeParticipants.length === 0) return
+    if (exportedParticipants.length === 0) return
     
     const style = document.createElement('style')
     style.innerHTML = `
       @media print {
-        #root {
+        body > *:not(#print-area) {
           display: none !important;
         }
         #print-area {
@@ -478,7 +491,7 @@ export function AdminPanel() {
 
   // PDF direct downloader
   const handleDownloadPDF = () => {
-    if (activeParticipants.length === 0) return
+    if (exportedParticipants.length === 0) return
     
     const runPdfGeneration = () => {
       const element = document.getElementById('print-area')
@@ -494,7 +507,8 @@ export function AdminPanel() {
         filename:     `reporte_capacitacion_${activeTab}_migusto.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+        pagebreak:    { mode: ['css', 'legacy'], avoid: 'tr' }
       }
       
       // @ts-ignore
@@ -664,29 +678,6 @@ export function AdminPanel() {
           </div>
 
           <div className="flex gap-3 w-full sm:w-auto justify-end items-center">
-            {(() => {
-              const activeTraining = trainings.find(t => t.id === activeTab)
-              if (!activeTraining) return null
-              return (
-                <div className="flex items-center gap-2.5 mr-2 bg-white/5 border border-slate-500/10 px-3 py-2 rounded-lg">
-                  <span className="text-xs font-bold text-text-muted select-none">
-                    {activeTraining.active ? 'Habilitada' : 'Deshabilitada'}
-                  </span>
-                  <button
-                    onClick={() => updateTrainingActiveStatus(activeTraining.id, !activeTraining.active)}
-                    className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      activeTraining.active ? 'bg-green-500' : 'bg-slate-600'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${
-                        activeTraining.active ? 'translate-x-4' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-              )
-            })()}
             <button
               onClick={() => setViewMode(v => v === 'collaborators' ? 'participants' : 'collaborators')}
               className={`text-xs font-bold border px-4 py-2.5 rounded-lg transition-all duration-200 flex items-center gap-1.5 ${
@@ -715,30 +706,51 @@ export function AdminPanel() {
 
         {/* Training tabs — hidden in collaborators view */}
         {viewMode === 'participants' && (
-        <div className="flex w-full border-b border-surface-border/50 gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-px">
+        <div className="flex w-full border-b border-surface-border/50 gap-4 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-px">
           {trainings.map((t) => {
             const count = participants.filter(p => p.trainingId === t.id).length
             const isActive = activeTab === t.id
             return (
-              <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id)}
-                className={`sm:flex-1 flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-2.5 border-b-2 font-bold text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
-                  isActive
-                    ? 'border-brand-500 text-brand-400 bg-brand-500/5'
-                    : 'border-transparent text-text-muted hover:text-white hover:bg-surface-elevated/20'
-                }`}
-              >
-                <span className="text-sm sm:text-base">{t.icon}</span>
-                <span>{t.shortTitle}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-                  isActive 
-                    ? 'bg-brand-500/20 text-brand-300' 
-                    : 'bg-surface-elevated text-text-muted'
-                }`}>
-                  {count}
-                </span>
-              </button>
+              <div key={t.id} className="sm:flex-1 flex-shrink-0 flex flex-col items-center gap-2">
+                {/* Switch above the tab */}
+                <div className="flex items-center gap-1.5 py-0.5 text-[10px] text-text-muted/60 select-none">
+                  <span className="font-semibold tracking-tight">
+                    {t.active ? 'Activa' : 'Inactiva'}
+                  </span>
+                  <button
+                    onClick={() => updateTrainingActiveStatus(t.id, !t.active)}
+                    className={`relative inline-flex h-3.5 w-7 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none items-center px-0.5 ${
+                      t.active ? 'bg-emerald-500/70' : 'bg-slate-700/50'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-white transition duration-200 ease-in-out ${
+                        t.active ? 'translate-x-3.5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* The tab button itself */}
+                <button
+                  onClick={() => setActiveTab(t.id)}
+                  className={`w-full flex items-center justify-center gap-1.5 px-3 py-2.5 border-b-2 font-bold text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
+                    isActive
+                      ? 'border-brand-500 text-brand-400 bg-brand-500/5'
+                      : 'border-transparent text-text-muted hover:text-white hover:bg-surface-elevated/20'
+                  }`}
+                >
+                  <span className="text-sm sm:text-base">{t.icon}</span>
+                  <span>{t.shortTitle}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
+                    isActive 
+                      ? 'bg-brand-500/20 text-brand-300' 
+                      : 'bg-surface-elevated text-text-muted'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              </div>
             )
           })}
         </div>
@@ -1152,6 +1164,20 @@ export function AdminPanel() {
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-gray-200 text-gray-600 uppercase font-bold bg-slate-50">
+                    <th className="px-4 py-3.5 text-center font-bold tracking-wider w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedUserNames.length === activeParticipants.length && activeParticipants.length > 0}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedUserNames(activeParticipants.map(p => p.userName))
+                          } else {
+                            setSelectedUserNames([])
+                          }
+                        }}
+                        className="w-3.5 h-3.5 rounded border-gray-300 bg-white accent-brand-500 cursor-pointer"
+                      />
+                    </th>
                     {visibleColumns.trabajador && <th className="px-4 py-3.5 text-left font-bold tracking-wider">Colaborador</th>}
                     {visibleColumns.legajo     && <th className="px-4 py-3.5 text-center font-bold tracking-wider">Legajo</th>}
                     {visibleColumns.sector     && <th className="px-4 py-3.5 text-center font-bold tracking-wider">Sector</th>}
@@ -1167,8 +1193,23 @@ export function AdminPanel() {
                     const isFailed = p.evaluationFailed === true
                     const status = isPassed ? 'Aprobado' : isFailed ? 'Desaprobado' : 'En curso'
                     const score = p.evaluationScore !== undefined ? `${p.evaluationScore}/${p.trainingId === 'armado' ? 22 : 15}` : '-'
+                    const isSelected = selectedUserNames.includes(p.userName)
                     return (
                       <tr key={p.userName} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                        <td className="px-4 py-3.5 text-center">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedUserNames(prev => [...prev, p.userName])
+                              } else {
+                                setSelectedUserNames(prev => prev.filter(name => name !== p.userName))
+                              }
+                            }}
+                            className="w-3.5 h-3.5 rounded border-gray-300 bg-white accent-brand-500 cursor-pointer"
+                          />
+                        </td>
                         {visibleColumns.trabajador && <td className="px-4 py-3.5 text-left font-normal text-gray-500">{p.userName}</td>}
                         {visibleColumns.legajo     && <td className="px-4 py-3.5 text-center text-gray-300"></td>}
                         {visibleColumns.sector     && <td className="px-4 py-3.5 text-center font-medium text-gray-500">{getSectorForUser(p.userName)}</td>}
@@ -1509,6 +1550,15 @@ export function AdminPanel() {
               border-top: none !important;
               font-size: 10px !important;
             }
+            #print-area tr {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+            #print-area .doc-header,
+            #print-area .info-section {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
             #print-area thead tr {
               background-color: #f0f0f0 !important;
             }
@@ -1551,13 +1601,17 @@ export function AdminPanel() {
             }
 
             @media print {
-              #root { display: none !important; }
+              @page {
+                size: portrait;
+                margin: 15mm 12mm;
+              }
+              body > *:not(#print-area) { display: none !important; }
               #print-area {
                 display: block !important;
                 position: absolute !important;
                 left: 0 !important; top: 0 !important;
                 width: 100% !important;
-                padding: 24px !important;
+                padding: 0 !important;
               }
             }
           `}} />
@@ -1617,7 +1671,7 @@ export function AdminPanel() {
                     </tr>
                   </thead>
                   <tbody>
-                    {activeParticipants.map((p, idx) => {
+                    {exportedParticipants.map((p, idx) => {
                       const isPassed = p.evaluationFailed === false
                       const isFailed = p.evaluationFailed === true
                       const status = isPassed ? 'Aprobado' : isFailed ? 'Desaprobado' : 'En curso'
@@ -1637,9 +1691,9 @@ export function AdminPanel() {
                       )
                     })}
                     {/* Pad with empty rows so there's always space to fill manually */}
-                    {Array.from({ length: Math.max(0, 5 - activeParticipants.length) }).map((_, i) => (
+                    {Array.from({ length: Math.max(0, 5 - exportedParticipants.length) }).map((_, i) => (
                       <tr key={`empty-${i}`}>
-                        <td className="num-cell">{activeParticipants.length + i + 1}</td>
+                        <td className="num-cell">{exportedParticipants.length + i + 1}</td>
                         {visibleColumns.trabajador && <td className="name-cell"></td>}
                         {visibleColumns.legajo     && <td></td>}
                         {visibleColumns.sector     && <td></td>}

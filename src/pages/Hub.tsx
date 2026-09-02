@@ -484,7 +484,7 @@ export function Hub() {
             Portal de Formación <span className="gradient-text">Fábrica</span>
           </h1>
           <p className="text-text-secondary mt-2 sm:mt-3 max-w-lg mx-auto text-xs sm:text-base hidden sm:block">
-            Seleccioná la capacitación asignada para registrarte e iniciar tu entrenamiento obligatorio.
+            Seleccioná la capacitación asignada para registrarte e iniciar tu entrenamiento obligatorio. Recordá que tenés un límite de <strong>40 minutos</strong> para completar todo el contenido y rendir la evaluación.
           </p>
         </div>
 
@@ -680,9 +680,15 @@ export function Hub() {
               ✕
             </button>
             <h3 className="text-fluid-xl font-bold text-white mb-2">Registro del colaborador</h3>
-            <p className="text-xs text-text-secondary mb-5 leading-relaxed">
+            <p className="text-xs text-text-secondary mb-4 leading-relaxed">
               Buscá y seleccioná tu nombre de la lista para registrar tu participación.
             </p>
+            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs px-4 py-3 rounded-xl flex items-start gap-2.5 text-left leading-relaxed mb-4">
+              <span className="text-lg">⚠️</span>
+              <span>
+                <strong>Aviso importante:</strong> Al comenzar la capacitación, tendrás un tiempo límite de <strong>40 minutos</strong> para leer todo el contenido y rendir la evaluación final de corrido.
+              </span>
+            </div>
             <form onSubmit={handleSubmitName} className="flex flex-col gap-4">
               <div className="relative">
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
