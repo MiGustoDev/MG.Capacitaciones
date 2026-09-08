@@ -26,11 +26,31 @@ export function ImagePlaceholder({
     : 'aspect-video'
 
   if (image && !hasError) {
+    const isContain = objectFit === 'contain'
+    const fitClass = isContain ? 'object-contain bg-transparent border-none' : 'object-cover border border-surface-border'
+    const isVideo = image.endsWith('.mp4') || image.endsWith('.webm')
+
+    if (isVideo) {
+      return (
+        <video
+          src={getAssetUrl(image)}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className={`w-full h-auto max-h-[50vh] sm:max-h-[65vh] md:max-h-[70vh] rounded-xl ${fitClass} select-none ${className}`}
+          onError={() => setHasError(true)}
+        />
+      )
+    }
+
     return (
       <img
         src={getAssetUrl(image)}
         alt={alt}
-        className={`w-full h-auto max-h-[65vh] md:max-h-[70vh] rounded-xl border border-surface-border object-cover select-none pointer-events-none ${className}`}
+        loading="lazy"
+        decoding="async"
+        className={`w-full h-auto max-h-[50vh] sm:max-h-[65vh] md:max-h-[70vh] rounded-xl ${fitClass} select-none pointer-events-none ${className}`}
         onError={() => setHasError(true)}
       />
     )

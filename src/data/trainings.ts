@@ -34,6 +34,17 @@ export const TRAININGS: Training[] = [
     totalColaboradores: 47,
   },
   {
+    id: 'medicina',
+    title: 'Emergencias',
+    shortTitle: 'Emergencias',
+    icon: '🩺',
+    active: true,
+    tagline: 'Obligatorio y Disponible',
+    description: 'Primeros auxilios, RCP, maniobra de Heimlich, desfibrilador (DEA) y extintores.',
+    themeColor: 'red',
+    totalColaboradores: 141,
+  },
+  {
     id: 'carnes',
     title: 'M. de carnes',
     shortTitle: 'Carnes',

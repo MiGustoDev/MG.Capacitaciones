@@ -35,41 +35,68 @@ export function CompareSlide({ content }: CompareSlideProps) {
           className={
             mobileGrid
               ? 'grid grid-cols-2 gap-3 sm:gap-4'
-              : 'grid grid-cols-1 sm:grid-cols-2 gap-4'
+              : 'grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6'
           }
         >
           {content.compareColumns!.map((col, i) => {
             const isCorrect = col.variant === 'correct'
+            const columnThemes = [
+              {
+                bg: 'bg-gradient-to-b from-amber-500/15 to-orange-950/30 border-amber-500/50 shadow-amber-500/10',
+                title: 'text-amber-400 font-black',
+                badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+                icon: '🔥'
+              },
+              {
+                bg: 'bg-gradient-to-b from-blue-500/15 to-indigo-950/30 border-blue-500/50 shadow-blue-500/10',
+                title: 'text-blue-400 font-black',
+                badgeBg: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+                icon: '🧪'
+              }
+            ]
+            const theme = columnThemes[i % columnThemes.length]
+
             return (
               <div
                 key={i}
-                className={`rounded-2xl border-2 flex flex-col gap-3 ${
-                  mobileGrid ? 'p-3 sm:p-5' : 'p-5'
+                className={`rounded-2xl border-2 flex flex-col gap-3.5 shadow-xl transition-all hover:scale-[1.01] ${
+                  mobileGrid ? 'p-4 sm:p-5' : 'p-5 sm:p-6'
                 } ${
-                  isCorrect
+                  isCorrect && !col.label.includes('QUEMADURAS') && !col.label.includes('INTOXICACIÓN')
                     ? 'bg-brand-600/10 border-brand-600/50'
-                    : 'bg-red-500/10 border-red-500/50'
+                    : theme.bg
                 }`}
               >
-                <h3
-                  className={`font-bold ${
-                    mobileGrid ? 'text-sm sm:text-fluid-lg' : 'text-fluid-lg'
-                  } ${isCorrect ? 'text-brand-400' : 'text-red-400'}`}
-                >
-                  {col.label}
-                </h3>
-                <ul className="flex flex-col gap-2">
-                  {col.items.map((item, j) => (
-                    <li
-                      key={j}
-                      className={`flex items-start gap-2 text-text-secondary ${
-                        mobileGrid ? 'text-xs sm:gap-3 sm:text-fluid-base' : 'gap-3 text-fluid-base'
-                      }`}
-                    >
-                      <span className="mt-0.5 flex-shrink-0">{isCorrect ? '✅' : '❌'}</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <span className="text-xl sm:text-2xl">{theme.icon}</span>
+                  <h3
+                    className={`font-black ${
+                      mobileGrid ? 'text-sm sm:text-lg' : 'text-base sm:text-xl'
+                    } ${theme.title}`}
+                  >
+                    {col.label}
+                  </h3>
+                </div>
+
+                <ul className="flex flex-col gap-3 mt-1">
+                  {col.items.map((item, j) => {
+                    const isWarning = item.startsWith('NO ')
+                    return (
+                      <li
+                        key={j}
+                        className={`flex items-start gap-2.5 ${
+                          mobileGrid ? 'text-xs sm:gap-3 sm:text-sm' : 'gap-3 text-xs sm:text-sm'
+                        } font-medium leading-relaxed ${
+                          isWarning ? 'text-rose-300' : 'text-slate-100'
+                        }`}
+                      >
+                        <span className="mt-0.5 flex-shrink-0 text-base">
+                          {isWarning ? '🛑' : '✅'}
+                        </span>
+                        <span>{item}</span>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             )

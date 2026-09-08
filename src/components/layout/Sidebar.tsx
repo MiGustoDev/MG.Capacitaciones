@@ -124,21 +124,21 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             <span className="truncate">{progress.userName || 'Colaborador'}</span>
           </p>
           <h2 className="text-sm font-bold text-text-primary mt-0.5 truncate">
-            {courseData.id === 'armado' ? 'Armado' : 'BPM'} · Capacitación
+            {courseData.id === 'medicina' ? 'Emergencias' : courseData.id === 'armado' ? 'Armado' : 'BPM'} · Capacitación
           </h2>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Botón Inicio */}
+          {/* Botón Volver */}
           <button
             onClick={() => {
-              navigate('/')
+              navigate(`/${progress.trainingId || 'calidad'}`)
               handleClose()
             }}
-            title="Volver al inicio"
-            className="btn-primary flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg shadow-glow"
+            title="Volver a los módulos"
+            className="btn-primary flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg shadow-glow bg-slate-700 hover:bg-slate-600 text-white"
           >
-            <span>🏠</span>
-            <span>Inicio</span>
+            <span>⬅️</span>
+            <span>Volver</span>
           </button>
 
           <button
@@ -153,7 +153,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Module tree */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-5" aria-label="Módulos del curso">
-        {courseData.modules.map(mod => {
+        {(courseData.id === 'medicina'
+          ? courseData.modules.filter(m => m.id === progress.currentModuleId)
+          : courseData.modules
+        ).map(mod => {
           const completedInModule = mod.lessons.filter(l => isLessonCompleted(l.id)).length
           const isCurrent = mod.id === progress.currentModuleId
           const isImageIcon = mod.icon.startsWith('/') || mod.icon.includes('.')
@@ -183,14 +186,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {mod.lessons.map(lesson => {
                   const flat = getFlatLessons(courseData)
                   const idx = flat.findIndex(l => l.id === lesson.id)
+                  const isFreeNav = courseData.freeNavigation || courseData.id === 'medicina'
                   let isLocked = false
-                  if (idx > 0) {
+                  if (!isFreeNav && idx > 0) {
                     const prevLesson = flat[idx - 1]
                     isLocked = !isLessonCompleted(prevLesson.id)
                   }
                   
                   // Special additional lock for cierre-equipo
-                  if (lesson.id === 'cierre-equipo' && !isLocked) {
+                  if (!isFreeNav && lesson.id === 'cierre-equipo' && !isLocked) {
                     isLocked = !isLessonCompleted('evaluacion-test') && progress.evaluationFailed !== false
                   }
                   
@@ -218,17 +222,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer — only Evaluar button, no text */}
-      <div className="px-5 py-4 border-t border-surface-border flex justify-center">
-        <button
-          onClick={handleGoToEvaluation}
-          title="Acceder a la evaluación"
-          className="btn-primary flex items-center gap-1.5 text-xs py-2 px-4 rounded-lg shadow-glow"
-        >
-          <span>📝</span>
-          <span>Evaluar</span>
-        </button>
-      </div>
+      {/* Footer — only Evaluar button for courses with evaluation */}
+      {courseData.id !== 'medicina' && (
+        <div className="px-5 py-4 border-t border-surface-border flex justify-center">
+          <button
+            onClick={handleGoToEvaluation}
+            title="Acceder a la evaluación"
+            className="btn-primary flex items-center gap-1.5 text-xs py-2 px-4 rounded-lg shadow-glow"
+          >
+            <span>📝</span>
+            <span>Evaluar</span>
+          </button>
+        </div>
+      )}
     </div>
   )
 

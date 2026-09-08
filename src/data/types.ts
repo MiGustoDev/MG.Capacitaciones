@@ -34,6 +34,7 @@ export interface CompareColumn {
 /** Un paso en una secuencia */
 export interface Step {
   number: number
+  letter?: string
   title: string
   description?: string
 }
@@ -46,6 +47,7 @@ export interface LessonContent {
   items?: BulletItem[]
   compareColumns?: CompareColumn[]
   steps?: Step[]
+  stepsTitle?: string
   quote?: string
   quoteAuthor?: string
   imageAlt?: string
@@ -98,6 +100,7 @@ export interface Course {
   modules: Module[]
   questions: Question[]
   passScore: number
+  freeNavigation?: boolean
 }
 
 /** Estado de progreso del usuario */

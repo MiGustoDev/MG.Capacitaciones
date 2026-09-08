@@ -15,7 +15,13 @@ function AnimatedRoutes() {
         <Route path="/" element={<Hub />} />
         <Route path="/calidad" element={<Landing trainingId="calidad" />} />
         <Route path="/armado" element={<Landing trainingId="armado" />} />
+        <Route path="/medicina" element={<Landing trainingId="medicina" />} />
+        
+        {/* Dynamic section & lesson URLs for direct QR access */}
+        <Route path="/:trainingId/modulo/:moduleId" element={<Course />} />
+        <Route path="/:trainingId/modulo/:moduleId/:lessonId" element={<Course />} />
         <Route path="/curso" element={<Course />} />
+        
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
